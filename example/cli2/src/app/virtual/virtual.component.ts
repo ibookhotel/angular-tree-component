@@ -1,32 +1,32 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'app-basictree',
   template: `
-    <tree-root [focused]="true" [nodes]="nodes"></tree-root>
+    <div id="tree-wrapper"><tree-root [focused]="true" [nodes]="nodes" [options]="customTemplateStringOptions"></tree-root></div>
   `,
   styles: []
 })
 export class VirtualComponent {
-  nodes = [
-    {
-      name: 'root1',
-      children: [
-        { name: 'child1' },
-        { name: 'child2' }
-      ]
-    },
-    {
-      name: 'root2',
-      children: [
-        { name: 'child2.1', children: [] },
-        { name: 'child2.2', children: [
-          {name: 'grandchild2.2.1'}
-        ] }
-      ]
-    },
-    { name: 'root3' },
-    { name: 'root4', children: [] },
-    { name: 'root5', children: null }
-  ];
+  nodes = [];
+  customTemplateStringOptions = {
+    nodeHeight: 23,
+    useVirtualScroll: true
+  };
+
+  constructor() {
+    this.nodes = this._makeDataSet(50);
+  }
+
+  private _makeDataSet(count) {
+    const dataSet = [];
+
+    for (let i = 1; i <= count; i++) {
+      dataSet.push({
+        id: 1,
+        name: 'node ' + i
+      });
+    }
+    return dataSet;
+  }
 }
