@@ -3,19 +3,22 @@ import {Component} from '@angular/core';
 @Component({
   selector: 'app-basictree',
   template: `
-    <div id="tree-wrapper"><tree-root [focused]="true" [nodes]="nodes" [options]="customTemplateStringOptions"></tree-root></div>
+    <div id="tree-wrapper">
+      <tree-root [focused]="true" [nodes]="nodes" [options]="customTemplateStringOptions"></tree-root>
+    </div>
   `,
   styles: []
 })
 export class VirtualComponent {
-  nodes = [];
-  customTemplateStringOptions = {
+  public nodes = [];
+  public customTemplateStringOptions = {
     nodeHeight: 23,
     useVirtualScroll: true
   };
+  public noOfNodes = 100000;  // 1.000.000 crache browser
 
   constructor() {
-    this.nodes = this._makeDataSet(50);
+    this.nodes = this._makeDataSet(this.noOfNodes);
   }
 
   private _makeDataSet(count) {

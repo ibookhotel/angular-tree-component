@@ -37,6 +37,9 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
 
   @observable viewportNodes: TreeNode[];
 
+  /*
+   * TODO: Check logic
+   */
   @computed get marginTop(): string {
     const firstNode = this.viewportNodes && this.viewportNodes.length && this.viewportNodes[0];
     const relativePosition = firstNode ? firstNode.position - firstNode.parent.position - firstNode.parent.getSelfHeight() : 0;
@@ -50,11 +53,15 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
     this._nodes = nodes;
   }
 
+    /*
+     * TODO: Check logic, here is done set of property "viewportNodes"
+     */
   ngOnInit() {
     this.virtualScroll = this.treeModel.virtualScroll;
     this._dispose = [
       // return node indexes so we can compare structurally,
       reaction(() => {
+        console.log('Virtual Scroll Viewport DOM changed. TreeNodeCollectionComponent ngOnInit, reaction method', this.virtualScroll.getViewportNodes(this.nodes));
         return this.virtualScroll.getViewportNodes(this.nodes).map(n => n.index);
       }, (nodeIndexes) => {
           this.viewportNodes = nodeIndexes.map((i) => this.nodes[i]);
@@ -62,6 +69,7 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
       ),
       reaction(() => this.nodes, (nodes) => {
         this.viewportNodes = this.virtualScroll.getViewportNodes(nodes);
+        console.log('ngOnInit, reaction method', this.virtualScroll.getViewportNodes(nodes));
       })
     ];
   }

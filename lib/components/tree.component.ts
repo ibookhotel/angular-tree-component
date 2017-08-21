@@ -133,6 +133,7 @@ export class TreeComponent implements OnChanges {
   }
 
   sizeChanged() {
+    console.log('TreeComponent: sizeChanged method();');
     this.viewportComponent.setViewport();
   }
 }

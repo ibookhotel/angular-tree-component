@@ -30,7 +30,7 @@ export class TreeVirtualScroll {
 
   fireEvent(event) {
     this.treeModel.fireEvent(event);
-    console.log('fireEvent',event);
+    // console.log('fireEvent',event);
   }
 
   init() {
@@ -90,9 +90,9 @@ export class TreeVirtualScroll {
       yBlocks: Math.round(viewport.scrollTop / Y_EPSILON),
       viewportHeight: viewport.getBoundingClientRect().height
     });
-    console.log('Scroll wheel', viewport);
-    console.log('yBlocks', Math.round(viewport.scrollTop / Y_EPSILON));
-    console.log('viewportHeight', viewport.getBoundingClientRect().height);
+    // console.log('Scroll wheel', viewport);
+    // console.log('yBlocks', Math.round(viewport.scrollTop / Y_EPSILON));
+    // console.log('viewportHeight', viewport.getBoundingClientRect().height);
   }
 
   @action scrollIntoView(node, force, scrollToMiddle = true) {
@@ -109,6 +109,9 @@ export class TreeVirtualScroll {
     }
   }
 
+  /*
+   * TODO: Check logic
+   */
   getViewportNodes(nodes) {
     if (!nodes) return [];
 
