@@ -26,7 +26,7 @@ export class VirtualComponent {
 
     for (let i = 1; i <= count; i++) {
       dataSet.push({
-        id: 1,
+        id: i,
         name: 'node ' + i
       });
     }

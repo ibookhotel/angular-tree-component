@@ -64,6 +64,7 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
         console.log('Virtual Scroll Viewport DOM changed. TreeNodeCollectionComponent ngOnInit, reaction method', this.virtualScroll.getViewportNodes(this.nodes));
         return this.virtualScroll.getViewportNodes(this.nodes).map(n => n.index);
       }, (nodeIndexes) => {
+          console.log('Virtual react second method call. Node index', nodeIndexes);
           this.viewportNodes = nodeIndexes.map((i) => this.nodes[i]);
         }, { compareStructural: true, fireImmediately: true }
       ),
