@@ -15,6 +15,12 @@ import {Observable} from 'rxjs/Observable';
 export class VirtualComponent {
 
   /*
+   * Page titles
+   */
+  public title = 'ARIM Tree View Component';
+  public subTitle = 'UX driven developemtn of Tree View Component for ARIM Framework';
+
+  /*
    * Tree View Component Model
    */
   public nodeModel: TreeViewData[] = [];
@@ -97,9 +103,6 @@ export class VirtualComponent {
     const timer = Observable.timer(2000, 3000);
     timer.subscribe(t => {
       console.log(this.treeModelRef);
-
-      const vNodes = this.treeModelRef.treeModel.virtualScroll.getViewportNodes(this.treeModelRef.treeModel.nodes).map(n => n.index)
-      console.log(vNodes);
     });
   }
 

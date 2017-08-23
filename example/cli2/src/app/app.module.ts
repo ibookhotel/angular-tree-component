@@ -11,6 +11,7 @@ import {FullTreeComponent} from './fulltree/fulltree.component';
 import {TemplatesComponent} from './templates/templates.component';
 import {FilterComponent} from './filter/filter.component';
 import {VirtualComponent} from './virtual/virtual.component';
+import {PaginationModule} from 'ngx-bootstrap';
 
 const routes: Route[] = [
   {
@@ -49,7 +50,8 @@ const routes: Route[] = [
     FormsModule,
     HttpModule,
     TreeModule,
-    RouterModule.forRoot(routes, {useHash: true})
+    RouterModule.forRoot(routes, {useHash: true}),
+    PaginationModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent],

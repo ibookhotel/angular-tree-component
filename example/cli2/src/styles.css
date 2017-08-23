@@ -1,3 +1,25 @@
+html, body, app-root, p {
+  display: block;
+}
+
+html, body, app-root {
+  /*height: 100%;*/
+}
+
+body {
+  margin: 10px;
+}
+
+p {
+  margin: 0;
+}
+
+.panel-body {
+  height: 200px;
+}
+
+
+
 #tree-wrapper {
   background: #fafafa;
   margin: 20px;
