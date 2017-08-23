@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {TreeRestService} from './services/treerest.service';
 import {TreeViewData} from './models/treeview-data.model';
 import {PaginationModel} from './models/pagination.model';
@@ -12,7 +12,7 @@ import {Observable} from 'rxjs/Observable';
   styles: [],
   providers: [TreeRestService]
 })
-export class VirtualComponent {
+export class VirtualComponent implements OnInit, AfterViewInit {
 
   /*
    * Page titles
@@ -24,7 +24,8 @@ export class VirtualComponent {
    * Tree View Component Model
    */
   public nodeModel: TreeViewData[] = [];
-  public activeNodeParentId = 0;  // Root parent id is set to 0 on Rest API
+  public activeNodeParentId = 2;  // Root parent id is set to 0 on Rest API
+  public configVirtualRoot = true;  // Initialise only once
   public activeNode = {id: 1, name: '0001'};  // Active node
 
   /*
@@ -84,6 +85,18 @@ export class VirtualComponent {
   */
   @ViewChild('tree') treeModelRef: TreeComponent;
 
+  /*
+   * Reference to bootstrap panel which holds tree component
+   * This is used to calculate visible node inside viewport
+   */
+  @ViewChild('mainPanel') elementView: ElementRef;
+  @ViewChild('virtualScrollBar') virtualScrollBar: ElementRef;
+  private panelHeight: number;
+  private nodeHeight: number;
+  private rootNode: TreeNode;
+  private noOfVisibleNodes: number;
+  private marginTopVirtual: number;
+
 
   /*
    * Reference to Tree Model
@@ -100,11 +113,72 @@ export class VirtualComponent {
   ngOnInit() {
     this.getData(this.activeNodeParentId, this.pagination.currentPage);
 
-    const timer = Observable.timer(2000, 3000);
+    const timer = Observable.timer(0, 1000);
     timer.subscribe(t => {
-      console.log(this.treeModelRef);
+      this._configTreeMeasure();
     });
   }
+
+  /*
+   * Get margin top of virtual scroll
+   * Must be on After View Init
+   */
+  ngAfterViewInit() {
+
+    // const domElem = document.getElementById('#virtualScrollBar');
+    // console.log('domElem: ', domElem);
+    // const marginTop = domElem.offsetTop;
+    // console.log(marginTop);
+
+    // this.marginTopVirtual =
+
+  }
+
+  private _configTreeMeasure() {
+
+    // const visibleRoots = this.treeModelRef.treeModel.getVisibleRoots();
+    // console.log('domElem', domElem);
+    // console.log('virtualScrollBar', this.virtualScrollBar);
+    // console.log('visibleRoots', visibleRoots);
+
+    /*
+     * Bootstrap panel height setted in css or dynamically
+     * It will always be updated here
+     */
+    // this.panelHeight = this.elementView.nativeElement.offsetHeight;
+    this.panelHeight = this.treeModelRef.treeModel.virtualScroll.viewportHeight;
+
+    /*
+     * TreeModel root node used to get real height of one tree node
+     * So we can calculate how many nodes can fit into panel
+     */
+    this.rootNode = this.treeModelRef.treeModel.getFirstRoot();
+
+    /*
+     * Node height
+     */
+    this.nodeHeight = this.rootNode.height - 10; // 10 px difference exist, check what it is
+
+    /*
+     *  Get num of visible nodes in viewport
+     */
+    this.noOfVisibleNodes = this.panelHeight / this.nodeHeight;
+
+    /*
+     * Get margin top of virtual scroll
+     */
+    const domElem = document.getElementById('#virtualScrollBar');
+    this.marginTopVirtual = domElem.offsetTop;
+
+    /*
+     * Info
+     */
+    // console.log('rootNode height: ', this.nodeHeight);
+    // console.log('Panel height: ', this.panelHeight);
+    // console.log('No.of Visible Nodes: ', this.noOfVisibleNodes);
+    // console.log('Margin Top Virtual: ', this.marginTopVirtual);
+  }
+
 
   /*
    * Only this method communicates with dataService
@@ -126,7 +200,8 @@ export class VirtualComponent {
        * 1. Set model first time for root tree or
        * 2. Add child nodes from server into Tree Model
        */
-      if (parentId === 0) {
+      if (this.configVirtualRoot) {
+        this.configVirtualRoot = false;
         this.nodeModel = results.items;
       } else {
         this.addChildNodes(this.nodeModel, parentId, results.items);

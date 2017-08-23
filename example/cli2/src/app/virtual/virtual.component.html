@@ -13,7 +13,7 @@
   <a class="btn btn-default" (click)="tree.treeModel.collapseAll()">Collapse All
   </a>
 
-  <input #filter (keyup)="tree.treeModel.filterNodes(filter.value);" type="text" id="quickFilterInputTree"
+  <input style="display: inline-block; width: auto" #filter (keyup)="tree.treeModel.filterNodes(filter.value);" type="text" id="quickFilterInputTree"
          placeholder="Type text to filter..." class="form-control"/>
 
   <a class="btn btn-default" (click)=" tree.treeModel.clearFilter(); filter.value='';">Clear</a>
@@ -29,7 +29,7 @@
   <br>
 
   <div class="panel panel-info">
-    <div class="panel-body">
+    <div class="panel-body" #mainPanel>
       <tree-root #tree [nodes]="nodeModel" [options]="options" [focused]="true"></tree-root>
     </div>
     <div class="panel-footer">Viewing node: <strong>{{activeNode.name}}</strong></div>

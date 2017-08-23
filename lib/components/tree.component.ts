@@ -35,7 +35,7 @@ const {includes, pick} = _;
     template: `
         <tree-viewport #viewport>
             <div
-                    class="tree"
+                    class="tree" 
                     [class.node-dragging]="treeDraggedElement.isDragging()">
                 <tree-node-collection
                         *ngIf="treeModel.roots"

@@ -16,6 +16,9 @@ p {
 
 .panel-body {
   height: 200px;
+  height: 100px;
+  padding: 10px 0;
+  padding: 0;
 }
 
 
