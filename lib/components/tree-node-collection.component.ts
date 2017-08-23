@@ -106,7 +106,7 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
                     // console.log('TreeNodeCollectionComponent ngOnInit, reaction method 1', this._makeDataSet(20));
 
                     // return ;
-                    return vScrollNodesFake;
+                    return vScrollNodes;
                 },
                 /*
                  * Reaction 2. method
@@ -117,16 +117,16 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
 
                     // console.log('ngOnInit, reaction method 2', nodeIndexes);
 
-                    const fakeNodes = this._makeFakeNodeDataSet((this.offset++ * 10), this.limit);
-                    this.fakeNodes = fakeNodes;
+                    // const fakeNodes = this._makeFakeNodeDataSet((this.offset++ * 10), this.limit);
+                    // this.fakeNodes = fakeNodes;
 
-                    // const vViewportNodes = nodeIndexes.map((i) => this.nodes[i]);
-                    const vFakeViewportNodes = nodeIndexes.map((i) => new TreeNode(fakeNodes[i], this.treeModel.getFirstRoot(), this.treeModel, i));
+                    const vViewportNodes = nodeIndexes.map((i) => this.nodes[i]);
+                    // const vFakeViewportNodes = nodeIndexes.map((i) => new TreeNode(fakeNodes[i], this.treeModel.getFirstRoot(), this.treeModel, i));
                     // console.log('vViewportNodes: ', vViewportNodes);
-                    console.log('vViewportNodes: ', vFakeViewportNodes);
+                    // console.log('vViewportNodes: ', vFakeViewportNodes);
                     console.log('---------------');
-                    // console.log('vFakeViewportNodes: ', vFakeViewportNodes);
-                    this.viewportNodes = vFakeViewportNodes;
+                    console.log('vFakeViewportNodes: ', vViewportNodes);
+                    this.viewportNodes = vViewportNodes;
 
                 }, {compareStructural: true, fireImmediately: true}
             ),

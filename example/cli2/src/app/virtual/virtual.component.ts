@@ -15,7 +15,7 @@ export class VirtualComponent {
     nodeHeight: 23,
     useVirtualScroll: true
   };
-  public noOfNodes = 10;  // 1.000.000 crashes browser
+  public noOfNodes = 50;  // 1.000.000 crashes browser
 
   constructor() {
     this.nodes = this._makeDataSet(this.noOfNodes);
