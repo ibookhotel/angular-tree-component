@@ -15,7 +15,7 @@ import {VirtualComponent} from './virtual/virtual.component';
 const routes: Route[] = [
   {
     path: '',
-    component: FullTreeComponent
+    component: VirtualComponent
   },
   {
     path: 'basic',
