@@ -1,0 +1,38 @@
+  <div class="customToolbar">
+    <app-command-bar>
+      <app-command-item [icon]="'fa fa-toggle-on '" [tooltip]="'Expand All'"
+                        (action)="tree.treeModel.expandAll()">Expand All</app-command-item>
+
+      <app-command-item [icon]="'fa  fa-toggle-off'" [tooltip]="'Collapse All '"
+                        (action)="tree.treeModel.collapseAll()">Collapse All</app-command-item>
+
+      <input #filter (keyup)="tree.treeModel.filterNodes(filter.value);" type="text" id="quickFilterInputTree"
+             placeholder="Type text to filter..."/>
+
+      <app-command-item [icon]="'fa fa-filter '" [tooltip]="'Clear filter'"
+                        (action)="tree.treeModel.clearFilter(); filter.value = '';"></app-command-item>
+
+
+      <app-command-item [icon]="'fa fa-chevron-left'" [tooltip]="'Previous'"
+                        (action)="prev()">Previous</app-command-item>
+
+      <app-command-item [icon]="'fa fa-chevron-right'" [tooltip]="'Next'"
+                        (action)="next()">Next</app-command-item>
+
+
+    </app-command-bar>
+  </div>
+  <content>
+
+    <div id="tree-wrapper">
+      <tree-root  #tree [focused]="true" [nodes]="nodeModel" [options]="options"></tree-root>
+    </div>
+
+  </content>
+
+  <bottom-bar class="customToolbar">
+    <div class="window-bottom-bar-new">
+      <pre class="card card-block card-header">Viewing node: <strong>{{activeNode.name}}</strong></pre>
+    </div>
+  </bottom-bar>
+
