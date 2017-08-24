@@ -37,7 +37,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     currentPage: 1,
     smallNumPages: 0,
     maxSize: 7,
-    loadedPages: [1]
+    loadedPages: []
   };
 
   /**
@@ -96,7 +96,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   private rootNode: TreeNode;
   private noOfVisibleNodes: number;
   private marginTopVirtual: number;
-  private timerTick = 3000;
+  private timerTick = 10;
 
   constructor(private dataService: TreeRestService) {
   }
@@ -130,11 +130,6 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // const visibleRoots = this.treeModelRef.treeModel.getVisibleRoots();
-    // console.log('domElem', domElem);
-    // console.log('virtualScrollBar', this.virtualScrollBar);
-    // console.log('visibleRoots', visibleRoots);
-
     /*
      * Bootstrap panel height can be set in css or dynamically
      * It will always be updated here
@@ -156,7 +151,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      *  Get num of visible nodes in viewport
      */
     this.noOfVisibleNodes = Math.ceil(this.panelHeight / this.nodeHeight);
-    this.noOfVisibleNodes = this.panelHeight / this.nodeHeight;
+    // this.noOfVisibleNodes = this.panelHeight / this.nodeHeight;
 
     /*
      * Get margin top of virtual scroll
@@ -170,29 +165,61 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      * Find visible node indexes from - to
      */
     const indexFrom = Math.ceil(this.marginTopVirtual / this.nodeHeight);
-    this._virtualNodes(indexFrom, this.noOfVisibleNodes);
+    const curPage = Math.ceil(indexFrom / this.noOfVisibleNodes) + 1; // page starts from 1
+    console.log('curPage: ', curPage);
+    this._loadVirtualNodes(curPage, this.noOfVisibleNodes);
 
+    // this._printVisible(indexFrom, this.noOfVisibleNodes);
 
-    /*
-     * Info
-     */
+    // this._debug(curPage, indexFrom);
+  }
+
+  /*
+    * Debug
+    */
+  private _debug(curPage, indexFrom) {
+
     console.log('--------------');
 
     console.log('rootNode height: ', this.nodeHeight);
     console.log('Panel height: ', this.panelHeight);
     // console.log('No.of Visible Nodes: ', this.noOfVisibleNodes);
     // console.log('Margin Top Virtual: ', this.marginTopVirtual);
-    // console.log('indexFrom: ', indexFrom);
+    console.log('indexFrom: ', indexFrom);
+    console.log('curPage: ', curPage);
     // console.log('yBlocks: ', b);
     // console.log('y: ', y);
     // console.log('s: ', s);
 
-    console.log('------ Pagination -----');
-    console.log(this.pagination);
+    // console.log('------ Pagination -----');
+    // console.log(this.pagination);
 
   }
 
-  private _virtualNodes(from, noOfVisibleNodes) {
+  private _loadVirtualNodes(curPage, noOfVisibleNodes) {
+    const nodes = this.treeModelRef.treeModel.nodes;
+
+    if (nodes.length < this.pagination.totalItems) {
+
+      const element = this.pagination.currentPage;
+      const elemExist = this.pagination.loadedPages.indexOf(element) === -1;
+
+      console.log('elemExist: ', !elemExist);
+      console.log('loadedPages: ', this.pagination.loadedPages);
+      // console.log('element: ', element);
+
+      /**
+       * Caching of loaded pages
+       */
+      if (elemExist) {
+        this.pagination.currentPage++;
+        this.pagination.loadedPages.push(this.pagination.currentPage);
+        this.getData(this.activeNodeParentId, this.pagination.currentPage);
+      }
+    }
+  }
+
+  private _printVisible(from, noOfVisibleNodes) {
     const nodes = this.treeModelRef.treeModel.nodes;
 
     const limit = from + noOfVisibleNodes;
@@ -205,16 +232,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
        */
       if (nodes[i]) {
         console.log(nodes[i].name);
-        if (nodes.length < this.pagination.totalItems && this.pagination.loadedPages.indexOf(this.pagination.currentPage + 1) === -1) {
-
-          this.pagination.currentPage++;
-          this.pagination.loadedPages.push(this.pagination.currentPage);
-
-          this.getData(this.activeNodeParentId, this.pagination.currentPage);
-        }
       }
     }
-
   }
 
 
@@ -265,8 +284,11 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   addChildNodes(nodeModel, parentId, childNodes) {
-    const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
-    this.nodeModel = updatedModel;
+    // const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
+
+    this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
+
+    // this.nodeModel = updatedModel;
     this.treeModelRef.treeModel.update();
   }
 
