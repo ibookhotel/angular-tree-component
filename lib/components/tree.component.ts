@@ -137,7 +137,7 @@ export class TreeComponent implements OnChanges {
 
     ngOnChanges(changes) {
 
-        console.log('ngOnChanges', changes);
+        // console.log('ngOnChanges', changes);
 
         this.treeModel.setData({
             options: changes.options && changes.options.currentValue,

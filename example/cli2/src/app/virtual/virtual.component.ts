@@ -1,9 +1,10 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {TreeRestService} from './services/treerest.service';
 import {TreeViewData} from './models/treeview-data.model';
 import {PaginationModel} from './models/pagination.model';
 import {ITreeOptions, TREE_ACTIONS, TreeComponent, TreeNode} from 'angular-tree-component';
 import {Observable} from 'rxjs/Observable';
+import 'rxjs/Rx';
 
 
 @Component({
@@ -35,7 +36,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     totalItems: 0,
     currentPage: 1,
     smallNumPages: 0,
-    maxSize: 7
+    maxSize: 7,
+    loadedPages: [1]
   };
 
   /**
@@ -89,20 +91,12 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Reference to bootstrap panel which holds tree component
    * This is used to calculate visible node inside viewport
    */
-  @ViewChild('mainPanel') elementView: ElementRef;
-  @ViewChild('virtualScrollBar') virtualScrollBar: ElementRef;
   private panelHeight: number;
   private nodeHeight: number;
   private rootNode: TreeNode;
   private noOfVisibleNodes: number;
   private marginTopVirtual: number;
-
-
-  /*
-   * Reference to Tree Model
-   */
-  // @ViewChild(VirtualComponent)
-  // private tree: VirtualComponent;
+  private timerTick = 3000;
 
   constructor(private dataService: TreeRestService) {
   }
@@ -112,11 +106,6 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     */
   ngOnInit() {
     this.getData(this.activeNodeParentId, this.pagination.currentPage);
-
-    const timer = Observable.timer(0, 1000);
-    timer.subscribe(t => {
-      this._configTreeMeasure();
-    });
   }
 
   /*
@@ -124,17 +113,22 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Must be on After View Init
    */
   ngAfterViewInit() {
-
-    // const domElem = document.getElementById('#virtualScrollBar');
-    // console.log('domElem: ', domElem);
-    // const marginTop = domElem.offsetTop;
-    // console.log(marginTop);
-
-    // this.marginTopVirtual =
-
+    const timer = Observable.timer(0, this.timerTick);
+    setTimeout(() => {
+      timer.subscribe(t => {
+        this._configTreeMeasure();
+      });
+    }, 1);
   }
 
   private _configTreeMeasure() {
+
+    /*
+     * Check if tree root is initialised
+     */
+    if (!this.treeModelRef.treeModel.getFirstRoot()) {
+      return false;
+    }
 
     // const visibleRoots = this.treeModelRef.treeModel.getVisibleRoots();
     // console.log('domElem', domElem);
@@ -142,10 +136,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     // console.log('visibleRoots', visibleRoots);
 
     /*
-     * Bootstrap panel height setted in css or dynamically
+     * Bootstrap panel height can be set in css or dynamically
      * It will always be updated here
      */
-    // this.panelHeight = this.elementView.nativeElement.offsetHeight;
     this.panelHeight = this.treeModelRef.treeModel.virtualScroll.viewportHeight;
 
     /*
@@ -162,21 +155,66 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     /*
      *  Get num of visible nodes in viewport
      */
+    this.noOfVisibleNodes = Math.ceil(this.panelHeight / this.nodeHeight);
     this.noOfVisibleNodes = this.panelHeight / this.nodeHeight;
 
     /*
      * Get margin top of virtual scroll
      */
-    const domElem = document.getElementById('#virtualScrollBar');
-    this.marginTopVirtual = domElem.offsetTop;
+    const b = this.treeModelRef.viewportComponent.virtualScroll.yBlocks;
+    const y = this.treeModelRef.viewportComponent.virtualScroll.y;
+    const s = this.treeModelRef.viewportComponent.virtualScroll.viewport.scrollTop;
+    this.marginTopVirtual = s;
+
+    /*
+     * Find visible node indexes from - to
+     */
+    const indexFrom = Math.ceil(this.marginTopVirtual / this.nodeHeight);
+    this._virtualNodes(indexFrom, this.noOfVisibleNodes);
+
 
     /*
      * Info
      */
-    // console.log('rootNode height: ', this.nodeHeight);
-    // console.log('Panel height: ', this.panelHeight);
+    console.log('--------------');
+
+    console.log('rootNode height: ', this.nodeHeight);
+    console.log('Panel height: ', this.panelHeight);
     // console.log('No.of Visible Nodes: ', this.noOfVisibleNodes);
     // console.log('Margin Top Virtual: ', this.marginTopVirtual);
+    // console.log('indexFrom: ', indexFrom);
+    // console.log('yBlocks: ', b);
+    // console.log('y: ', y);
+    // console.log('s: ', s);
+
+    console.log('------ Pagination -----');
+    console.log(this.pagination);
+
+  }
+
+  private _virtualNodes(from, noOfVisibleNodes) {
+    const nodes = this.treeModelRef.treeModel.nodes;
+
+    const limit = from + noOfVisibleNodes;
+
+    for (let i = from; i < limit; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        console.log(nodes[i].name);
+        if (nodes.length < this.pagination.totalItems && this.pagination.loadedPages.indexOf(this.pagination.currentPage + 1) === -1) {
+
+          this.pagination.currentPage++;
+          this.pagination.loadedPages.push(this.pagination.currentPage);
+
+          this.getData(this.activeNodeParentId, this.pagination.currentPage);
+        }
+      }
+    }
+
   }
 
 
@@ -186,7 +224,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   getData(parentId, curPage) {
 
     /*
-     * Set activeNodeParentId
+     * Set activeNodeParentId when caled from getChildren method
      */
     this.activeNodeParentId = parentId;
 
@@ -250,8 +288,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
         if (node.children == null) {
           node.children = newNodes;
         } else {
-          // node.children = node.children.concat(newNodes);
-          node.children = newNodes;
+          node.children = node.children.concat(newNodes);
+          // node.children = newNodes;
         }
 
         return treeNodeModel;

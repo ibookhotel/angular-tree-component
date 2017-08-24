@@ -98,11 +98,11 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
                     const vFakeNodes = this.fakeNodes;
 
                     const vScrollNodes = this.virtualScroll.getViewportNodes(this.nodes).map(n => n.index);
-                    const vScrollNodesFake = this._makeFakeNodeArray((this.offset * 10), this.limit);
+                    // const vScrollNodesFake = this._makeFakeNodeArray((this.offset * 10), this.limit);
 
                     // const visibleNodes = vScrollNodesFake.filter((node) => !node.isHidden);
 
-                    console.log('reaction method 1', vScrollNodes);
+                    // console.log('reaction method 1', vScrollNodes);
                     // console.log('TreeNodeCollectionComponent ngOnInit, reaction method 1', this._makeDataSet(20));
 
                     // return ;
@@ -124,15 +124,15 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
                     // const vFakeViewportNodes = nodeIndexes.map((i) => new TreeNode(fakeNodes[i], this.treeModel.getFirstRoot(), this.treeModel, i));
                     // console.log('vViewportNodes: ', vViewportNodes);
                     // console.log('vViewportNodes: ', vFakeViewportNodes);
-                    console.log('---------------');
-                    console.log('vFakeViewportNodes: ', vViewportNodes);
+                    // console.log('---------------');
+                    // console.log('vFakeViewportNodes: ', vViewportNodes);
                     this.viewportNodes = vViewportNodes;
 
                 }, {compareStructural: true, fireImmediately: true}
             ),
             reaction(() => this.nodes, (nodes) => {
                 this.viewportNodes = this.virtualScroll.getViewportNodes(nodes);
-                console.log('ngOnInit, reaction method', this.virtualScroll.getViewportNodes(nodes));
+                // console.log('ngOnInit, reaction method', this.virtualScroll.getViewportNodes(nodes));
             })
         ];
     }

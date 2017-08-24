@@ -17,7 +17,7 @@ import { TREE_EVENTS } from '../constants/events';
   template: `
     <ng-container *mobxAutorun>
       <!--<div [style.height]="getTotalHeight()">-->
-      <div id="virtualScrollBar" #virtualScrollBar>
+      <div #virtualScrollBar>
         <ng-content></ng-content>
       </div>
     </ng-container>

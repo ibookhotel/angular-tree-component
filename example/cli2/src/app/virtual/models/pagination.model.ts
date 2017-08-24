@@ -3,4 +3,5 @@ export interface PaginationModel {
   currentPage: number;
   smallNumPages: number;
   maxSize: number;
+  loadedPages: any[];
 }
