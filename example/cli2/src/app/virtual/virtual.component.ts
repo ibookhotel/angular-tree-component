@@ -166,10 +166,10 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      */
     const indexFrom = Math.ceil(this.marginTopVirtual / this.nodeHeight);
     const curPage = Math.ceil(indexFrom / this.noOfVisibleNodes) + 1; // page starts from 1
-    console.log('curPage: ', curPage);
+    // console.log('curPage: ', curPage);
     this._loadVirtualNodes(curPage, this.noOfVisibleNodes);
 
-    // this._printVisible(indexFrom, this.noOfVisibleNodes);
+    this._printVisible(indexFrom, this.noOfVisibleNodes);
 
     // this._debug(curPage, indexFrom);
   }
@@ -204,8 +204,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       const element = this.pagination.currentPage;
       const elemExist = this.pagination.loadedPages.indexOf(element) === -1;
 
-      console.log('elemExist: ', !elemExist);
-      console.log('loadedPages: ', this.pagination.loadedPages);
+      // console.log('elemExist: ', !elemExist);
+      // console.log('loadedPages: ', this.pagination.loadedPages);
       // console.log('element: ', element);
 
       /**
@@ -220,6 +220,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   private _printVisible(from, noOfVisibleNodes) {
+
+    console.log('--------------');
+
     const nodes = this.treeModelRef.treeModel.nodes;
 
     const limit = from + noOfVisibleNodes;
