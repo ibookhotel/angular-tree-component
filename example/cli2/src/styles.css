@@ -16,12 +16,10 @@ p {
 
 .panel-body {
   height: 200px;
-  /*height: 100px;*/
+  height: 26px;
   padding: 10px 0;
   padding: 0;
 }
-
-
 
 #tree-wrapper {
   background: #fafafa;
@@ -33,5 +31,27 @@ p {
 
 tree-node,
 tree-node-wrapper {
+  display: block;
+}
+
+.panel-body {
+  position: relative;
+  overflow: auto;
+}
+
+.ul {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 90%;
+}
+
+.ul li {
+  list-style-type: none;
+  background: rgba(150, 0, 255, 0.29);
+  border: 1px dotted #9600ff;
+  height: 26px;
+  line-height: 26px;
   display: block;
 }
