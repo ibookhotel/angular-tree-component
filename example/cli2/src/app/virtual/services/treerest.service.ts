@@ -11,17 +11,6 @@ import {TreeViewData} from '../models/treeview-data.model';
 export class TreeRestService {
 
   /*
-   * Number of child nodes to fetch per API request
-   */
-  private limit = 10;
-
-  /*
-   * For API paging
-   * calculated based on curPage and limit
-   */
-  private offset = 0;
-
-  /*
    * Http Request options
    */
   private headers;
@@ -36,24 +25,28 @@ export class TreeRestService {
   }
 
   /*
-   * Calculate offset
+   * Calculate offset for API paging
    */
-  getOffset(curPage) {
-    return (curPage - 1) * this.limit;
+  getOffset(curPage, limit) {
+    return (curPage - 1) * limit;
   }
 
   /*
    * Build pagination url
    */
-  paginate(parentId: number, curPage?: number) {
+  paginate(parentId: number, curPage?: number, limit?: number) {
 
     if (curPage == null) {
       curPage = 0;
     }
 
+    if (limit == null) {
+      limit = 10;
+    }
+
     let endpoint = 'http://acuta-rest.local.bildhosting.me/contextual-data';
     // let endpoint = 'http://localhost:6634/contextual-data';
-    endpoint += '?parentId=' + parentId + '&limit=' + this.limit + '&offset=' + this.getOffset(curPage);
+    endpoint += '?parentId=' + parentId + '&limit=' + limit + '&offset=' + this.getOffset(curPage, limit);
     return this.getNodes(endpoint);
   }
 

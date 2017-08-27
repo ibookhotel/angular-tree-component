@@ -1,7 +1,10 @@
 export interface PaginationModel {
-  totalItems: number;
+  nodeId: any;
   currentPage: number;
-  smallNumPages: number;
-  maxSize: number;
-  loadedPages: any[];
+  totalRecords: number;
+  totalPages: number;
+  recordsPerPage: number;
+  visitedPages: number[];
+  lastChildNodeId: number;
+  isLoading: boolean;
 }
