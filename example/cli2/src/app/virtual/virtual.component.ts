@@ -69,7 +69,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     allowDrop: (node) => {
       return true;
     },
-    useVirtualScroll: true,
+    useVirtualScroll: false,
     nodeHeight: 30,
     dropSlotHeight: 3,
     animateExpand: true,
@@ -88,19 +88,20 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Reference to bootstrap panel which holds tree component
    * This is used to calculate visible node inside viewport
    */
-  private timerTick = 1000;
+  private timerTick = 10;
 
   public dataSet;
+  public debug = false;
 
   constructor(private dataService: TreeRestService) {
-    this.dataSet = this._makeDataSet(100);
+    // this.dataSet = this._makeDataSet(100);
   }
 
   /*
     * Get data from Rest API
     */
   ngOnInit() {
-    // this._createPaginationModel();
+    this._createPaginationModel();
   }
 
   /*
@@ -111,7 +112,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     const timer = Observable.timer(0, this.timerTick);
     setTimeout(() => {
       timer.subscribe(t => {
-        this._configVirtualMeasureFake();
+        this._configVirtualMeasure();
+        // this._configVirtualMeasureFake();
       });
     }, 1);
   }
@@ -148,6 +150,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
       model.lastChildNodeId = result.items[result.items.length - 1].id;
+      // model.lastChildNodeId = result.items[0].id;
 
       console.log('Data service result: ', result);
       console.log('Pagination model: ', model);
@@ -181,9 +184,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
       const notVisited = model.visitedPages.indexOf(model.currentPage + 1) === -1;
       if (notVisited) {
-        // model.isLoading = true;
-        // model.currentPage++;
-        // this._fetchData(model);
+        model.isLoading = true;
+        model.currentPage++;
+        this._fetchData(model);
       }
     }
   }
@@ -224,6 +227,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      * It will always be updated here
      */
     virtualModel.panelHeight = this.treeModelRef.treeModel.virtualScroll.viewportHeight;
+    // console.log('panelHeight: ', virtualModel.panelHeight);
 
     /*
      *  Get num of visible nodes in viewport round to upper
@@ -252,7 +256,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       this._loadMoreNodes();
     }
 
-    this._debug(virtualModel);
+    if (this.debug) {
+      this._debug(virtualModel);
+    }
   }
 
   private _configVirtualMeasureFake() {
@@ -310,7 +316,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     console.log('--------------');
     for (const i in virtualModel) {
       if (virtualModel.hasOwnProperty(i)) {
-        console.log(i, virtualModel[i]);
+        if (i !== 'nodeHeight' && i !== 'panelHeight') {
+          console.log(i, virtualModel[i]);
+        }
       }
     }
   }
@@ -331,7 +339,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
        * It might be undefined
        */
       if (nodes[i]) {
-        console.log(nodes[i].name);
+        if (this.debug) {
+          console.log(nodes[i].name);
+        }
         if (nodes[i].id === nodeId) {
           return true;
         }
@@ -381,12 +391,12 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Pagination changed
    */
   public pageChanged(event: any): void {
-    const model = this.paginationModels[0];
-    model.currentPage = event.page;
-    const notVisited = model.visitedPages.indexOf(model.currentPage) === -1;
-    if (notVisited) {
+    // const model = this.paginationModels[0];
+    // model.currentPage = event.page;
+    // const notVisited = model.visitedPages.indexOf(model.currentPage) === -1;
+    // if (notVisited) {
       // this._fetchData(model);
-    }
+    // }
   }
 
   addChildNodes(nodeModel, parentId, childNodes) {
@@ -436,9 +446,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
   }
 
-  // public setPage(pageNo: number): void {
-  //   this.pagination.currentPage = pageNo;
-  // }
+// public setPage(pageNo: number): void {
+//   this.pagination.currentPage = pageNo;
+// }
 
   /**
    * Context Menu Alert
@@ -448,26 +458,26 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
   ;
 
-  // onEvent(e) {
-  //   TREE_ACTIONS.SELECT(e.tree, e.node, e);
-  //   this.activeNodeParentId = e.node.data.id;
-  //   this.activeNode = e.node.data;
-  //   this.pagination.currentPage = 1;
-  // }
+// onEvent(e) {
+//   TREE_ACTIONS.SELECT(e.tree, e.node, e);
+//   this.activeNodeParentId = e.node.data.id;
+//   this.activeNode = e.node.data;
+//   this.pagination.currentPage = 1;
+// }
 
-  // prev() {
-  //   if (this.pagination.currentPage > 1) {
-  //     this.pagination.currentPage--;
-  //     this.getData(this.activeNodeParentId, this.pagination.currentPage);
-  //   }
-  // }
+// prev() {
+//   if (this.pagination.currentPage > 1) {
+//     this.pagination.currentPage--;
+//     this.getData(this.activeNodeParentId, this.pagination.currentPage);
+//   }
+// }
 
-  // next() {
-  //   if (this.pagination.currentPage < Math.ceil(this.pagination.totalRecords / this.pagination.recordsPerPage)) { // 10 is itemsPerPage
-  //     this.pagination.currentPage++;
-  //     this.getData(this.activeNodeParentId, this.pagination.currentPage);
-  //   }
-  // }
+// next() {
+//   if (this.pagination.currentPage < Math.ceil(this.pagination.totalRecords / this.pagination.recordsPerPage)) { // 10 is itemsPerPage
+//     this.pagination.currentPage++;
+//     this.getData(this.activeNodeParentId, this.pagination.currentPage);
+//   }
+// }
 
   private _makeDataSet(count) {
     const dataSet = [];

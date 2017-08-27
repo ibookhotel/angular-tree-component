@@ -10,25 +10,26 @@
   <div class="panel panel-info">
     <div class="panel-body">
 
-      <!--<tree-root #tree [nodes]="nodeModel" [options]="options" [focused]="true"></tree-root>-->
+      <tree-root #tree [nodes]="nodeModel" [options]="options" [focused]="true"></tree-root>
 
-      <ul class="ul" #ul>
-        <li *ngFor="let row of dataSet">
-          {{row.name}}
-        </li>
-      </ul>
+      <!--<ul class="ul" #ul>-->
+        <!--<li *ngFor="let row of dataSet">-->
+          <!--{{row.name}}-->
+        <!--</li>-->
+      <!--</ul>-->
 
     </div>
     <!--<div class="panel-footer">Viewing node: <strong>{{activeNode.name}}</strong></div>-->
   </div>
 
+  <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->
+
   <!--<pagination [totalItems]="paginationModels[0].totalRecords"-->
               <!--[(ngModel)]="paginationModels[0].currentPage"-->
               <!--(pageChanged)="pageChanged($event)"-->
-              <!--[maxSize]="5"-->
   <!--&gt;</pagination>-->
 
-  <!--<pre class="card card-block card-header">The selected page no: {{paginationModels[0].currentPage}}/{{paginationModels[0].totalPages}}</pre>-->
+  <pre class="card card-block card-header">The selected page no: {{paginationModels[0].currentPage}}/{{paginationModels[0].totalPages}}</pre>
 
 
 </content>
