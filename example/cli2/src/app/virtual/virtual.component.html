@@ -7,29 +7,34 @@
   <br>
   <br>
 
+
   <div class="panel panel-info">
     <div class="panel-body">
+      <div class="alert alert-info loading" *ngIf="this.paginationModels[0].isLoading">Loading...</div>
 
       <tree-root #tree [nodes]="nodeModel" [options]="options" [focused]="true"></tree-root>
 
       <!--<ul class="ul" #ul>-->
-        <!--<li *ngFor="let row of dataSet">-->
-          <!--{{row.name}}-->
-        <!--</li>-->
+      <!--<li *ngFor="let row of dataSet">-->
+      <!--{{row.name}}-->
+      <!--</li>-->
       <!--</ul>-->
 
     </div>
-    <!--<div class="panel-footer">Viewing node: <strong>{{activeNode.name}}</strong></div>-->
+    <div class="panel-footer">
+      <div class="right">
+        Number of loaded pages: <strong>{{paginationModels[0].currentPage}}</strong> / <strong>{{paginationModels[0].totalPages}}</strong>
+      </div>
+      Viewing node: <strong>{{activeNode.name}}</strong>
+    </div>
   </div>
 
   <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->
 
   <!--<pagination [totalItems]="paginationModels[0].totalRecords"-->
-              <!--[(ngModel)]="paginationModels[0].currentPage"-->
-              <!--(pageChanged)="pageChanged($event)"-->
+  <!--[(ngModel)]="paginationModels[0].currentPage"-->
+  <!--(pageChanged)="pageChanged($event)"-->
   <!--&gt;</pagination>-->
-
-  <pre class="card card-block card-header">The selected page no: {{paginationModels[0].currentPage}}/{{paginationModels[0].totalPages}}</pre>
 
 
 </content>

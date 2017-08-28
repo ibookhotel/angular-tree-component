@@ -36,6 +36,7 @@ tree-node-wrapper {
 
 .panel-body {
   height: 290px;
+  position: relative;
 }
 
 /*.panel-body {*/
@@ -59,3 +60,15 @@ tree-node-wrapper {
 /*line-height: 26px;*/
 /*display: block;*/
 /*}*/
+
+.loading {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 9999999;
+  border-radius: 0 4px 0 4px;
+  padding: 10px 20px;
+}
+.right{
+  float: right;
+}
