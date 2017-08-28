@@ -150,7 +150,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
       model.lastChildNodeId = result.items[result.items.length - 1].id;
-      // model.lastChildNodeId = result.items[0].id;
+      model.lastChildNodeId = result.items[0].id;
 
       console.log('Data service result: ', result);
       console.log('Pagination model: ', model);
