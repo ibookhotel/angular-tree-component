@@ -34,11 +34,11 @@ export class DomComponent implements OnInit {
   /*
    * Initial settings
    */
-  private timerTick = 5000;
+  private timerTick = 2000;
   public debug = true;
   private activePaginationTreeModelId = 0;
-  private recordsPerPage = 50;
-  private firstRootId = 1;
+  private recordsPerPage = 10;
+  private firstRootId = 0;
   public configRoot = true;  // Initialise only once
 
   /*
@@ -68,8 +68,25 @@ export class DomComponent implements OnInit {
 
     console.group('Model node ' + model.nodeId);
     console.log(model.triggerElement);
+    this._isDom(model.triggerElement, model);
     console.groupEnd();
 
+  }
+
+  private _isDom(el, model: PaginationModel) {
+    const isVisible = this._isScrolledIntoView(el.el);  // Check why is el needed
+    console.log(isVisible);
+    if (isVisible) {
+      this._loadNodes(model);
+    }
+  }
+
+  private _isScrolledIntoView(el) {
+    const elemTop = el.getBoundingClientRect().top;
+    const elemBottom = el.getBoundingClientRect().bottom;
+
+    const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
+    return isVisible;
   }
 
   ngOnInit() {
@@ -131,8 +148,8 @@ export class DomComponent implements OnInit {
             // this._ngAfterViewInit();  // Add timer to measure pagination and virtual model
 
             setTimeout(() => {
-              this.treeEl.treeModel.focusDrillDown();
-              this.treeEl.treeModel.focusDrillDown();
+              // this.treeEl.treeModel.focusDrillDown();
+              // this.treeEl.treeModel.focusDrillDown();
             }, 300);
 
           } else {
