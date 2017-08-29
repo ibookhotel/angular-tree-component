@@ -1,5 +1,6 @@
 export interface PaginationModel {
   nodeId: any;
+  nodeName?: any;
   currentPage: number;
   totalRecords: number;
   totalPages: number;

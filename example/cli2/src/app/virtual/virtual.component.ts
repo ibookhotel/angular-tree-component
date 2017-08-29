@@ -32,6 +32,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Created for each parent node
    */
   private paginationTreeModels: PaginationModel[] = [];
+  private activePaginationTreeModelId = 0;
   private recordsPerPage = 150;
   private firstRootId = 2;
 
@@ -84,7 +85,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   @ViewChild('tree') treeModelRef: TreeComponent;
   // @ViewChild('ul') ulModelRef;
 
-  private timerTick = 3000;
+  private timerTick = 10;
   public debug = true;
 
   constructor(private dataService: TreeRestService) {
@@ -125,9 +126,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
   private _treeConfiguration() {
     const length = this.paginationTreeModels.length;
+    // console.log(this.paginationTreeModels);
 
     for (let i = 0; i < length; i++) {
-      // console.log(this.paginationTreeModels);
       // this._configVirtualMeasure();
       const virtualModel = this._configureVirtualModel();
       this._configVirtualMeasure(this.paginationTreeModels[i], virtualModel);
@@ -150,6 +151,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   private _createPaginationModel(parentNodeId) {
     const paginationModel: PaginationModel = {
       nodeId: parentNodeId,
+      nodeName: 'Test name',
       currentPage: 1,
       totalRecords: -1,
       totalPages: -1,
@@ -190,7 +192,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.totalRecords = result.total;
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
-      model.childNodes.push(result.items);
+      model.childNodes = model.childNodes.concat(result.items);
 
       /*
        * Find id of 1/3 of total results
@@ -253,8 +255,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     /*
      * Get scroll top of virtual scroll
      */
-    virtualModel.yBlocks = this.treeModelRef.viewportComponent.virtualScroll.yBlocks;
-    virtualModel.y = this.treeModelRef.viewportComponent.virtualScroll.y;
+    // virtualModel.yBlocks = this.treeModelRef.viewportComponent.virtualScroll.yBlocks;
+    // virtualModel.y = this.treeModelRef.viewportComponent.virtualScroll.y;
     virtualModel.scrollTop = this.treeModelRef.viewportComponent.virtualScroll.viewport.scrollTop;
 
     /*
@@ -273,6 +275,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      * This enables us to see weather id is or was visible inside viewport
      */
     const idsOfVisible = this._idsOfVisible(virtualModel.indexFrom, virtualModel.noOfVisibleNodes, model);
+    // console.log('idsOfVisible: ', idsOfVisible);
     const lastViewportVisibleId = idsOfVisible[idsOfVisible.length - 1];
     const indexOfNode = this._findIndex(lastViewportVisibleId, model);
     // console.log('indexOfNode: ', indexOfNode);
@@ -284,9 +287,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       this._loadMoreNodes(model);
     }
 
-    if (this.debug) {
-      this._debug(virtualModel);
-    }
+    // if (this.debug) {
+    //   this._debug(virtualModel);
+    // }
   }
 
   /*
@@ -307,7 +310,11 @@ export class VirtualComponent implements OnInit, AfterViewInit {
        * Due to calculation of margin top in virtual scroll
        * It might be undefined
        */
+
       if (nodes[i]) {
+        // if (this.debug) {
+        //   console.log(nodes[i].name);
+        // }
         ids.push(nodes[i].id);
       }
     }
@@ -433,11 +440,11 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   addChildNodes(nodeModel, parentId, childNodes) {
-    const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
+    // const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
 
-    // this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
+    this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
 
-    this.nodeModel = updatedModel;
+    // this.nodeModel = updatedModel;
     this.treeModelRef.treeModel.update();
   }
 
