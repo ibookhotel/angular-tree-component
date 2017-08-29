@@ -9,6 +9,8 @@ import {VirtualModel} from './models/virtual.model';
 import {reaction, autorun} from 'mobx';
 import {ChildModel} from './models/child.model';
 
+// import {inView} from 'in-view/src';
+
 @Component({
   selector: 'app-basictree',
   templateUrl: './dom.component.html',
@@ -58,6 +60,11 @@ export class DomComponent implements OnInit {
 
       });
     }, 1);
+
+    // for (let i = 0; i < this.models.length; i++) {
+    //   this._triggers(this.models[i]);
+    // }
+
   }
 
   private _triggers(model: PaginationModel) {
@@ -67,18 +74,19 @@ export class DomComponent implements OnInit {
     }
 
     console.group('Model node ' + model.nodeId);
-    console.log(model.triggerElement);
-    this._isDom(model.triggerElement, model);
+    // console.log(model.triggerElement.el);
+    this._isDom(model.triggerElement.el, model);
     console.groupEnd();
 
   }
 
-  private _isDom(el, model: PaginationModel) {
-    const isVisible = this._isScrolledIntoView(el.el);  // Check why is el needed
-    console.log(isVisible);
-    if (isVisible) {
-      this._loadNodes(model);
-    }
+  private _isDom(element, model: PaginationModel) {
+    const options = {offset: {top: 0, right: 0, bottom: 0, left: 0}, threshold: 0};
+    const inViewport = this._inViewport(element, options);  // Check why is el needed
+    console.log(inViewport);
+    // if (inViewport) {
+    //   this._loadNodes(model);
+    // }
   }
 
   private _isScrolledIntoView(el) {
@@ -87,6 +95,35 @@ export class DomComponent implements OnInit {
 
     const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
     return isVisible;
+  }
+
+  private _inViewport(element, options) {
+
+    const {top, right, bottom, left, width, height} = element.getBoundingClientRect();
+    // const top = element.getBoundingClientRect().top;
+
+    const intersection = {
+      t: bottom,
+      r: window.innerWidth - left,
+      b: window.innerHeight - top,
+      l: right
+    };
+
+    // console.log(top, right, bottom, left, width, height);
+    console.log(element, top, right, bottom, left, width, height);
+    console.log(intersection);
+    console.log('offsetTop: ', element.offsetTop);
+
+    const threshold = {
+      x: options.threshold * width,
+      y: options.threshold * height
+    };
+    //
+    return intersection.t > (options.offset.top + threshold.y)
+      && intersection.r > (options.offset.right + threshold.x)
+      && intersection.b > (options.offset.bottom + threshold.y)
+      && intersection.l > (options.offset.left + threshold.x);
+
   }
 
   ngOnInit() {
