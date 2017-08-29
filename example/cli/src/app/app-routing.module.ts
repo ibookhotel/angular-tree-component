@@ -12,11 +12,12 @@ import { AsyncTreeComponent } from './async/async.component';
 import { SaveRestoreComponent } from './save-restore/save-restore.component';
 import { CheckboxesComponent } from './checkboxes/checkboxes.component';
 import { DragComponent } from './drag/drag.component';
+import {VirtualComponent} from './virtual/virtual.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: FullTreeComponent
+    component: VirtualComponent
   },
   {
     path: 'basic',

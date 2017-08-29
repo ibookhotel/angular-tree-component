@@ -23,6 +23,7 @@ import { DragComponent } from './drag/drag.component';
 */
 import { useStrict } from 'mobx';
 import { EmptyComponent } from './empty/empty.component';
+import {VirtualComponent} from './virtual/virtual.component';
 useStrict(true);
 
 
@@ -39,7 +40,8 @@ useStrict(true);
     AsyncTreeComponent,
     SaveRestoreComponent,
     CheckboxesComponent,
-    DragComponent
+    DragComponent,
+    VirtualComponent
   ],
   imports: [
     BrowserModule,
