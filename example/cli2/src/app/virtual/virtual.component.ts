@@ -25,16 +25,15 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Tree View Component Model
    */
   public nodeModel: TreeViewData[] = [];
-  public activeNodeParentId = 2;  // Root parent id is set to 0 on Rest API
   public configVirtualRoot = true;  // Initialise only once
-  public activeNode = {id: 1, name: '0001'};  // Active node
 
   /*
    * Pagination Models collection per parent tree node
    * Created for each parent node
    */
-  private paginationModels: PaginationModel[] = [];
+  private paginationTreeModels: PaginationModel[] = [];
   private recordsPerPage = 150;
+  private firstRootId = 2;
 
   /**
    * Tree View Component Options
@@ -43,13 +42,14 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
     getChildren: (node: TreeNode) => {
       // this.getData(node.data.id, this.pagination.currentPage);
+      console.log('Get children');
     },
     actionMapping: {
       mouse: {
         click: (tree, node, $event) => {
           TREE_ACTIONS.SELECT(tree, node, $event);
-          this.activeNodeParentId = node.data.id;
-          this.activeNode = node.data;
+          // this.activeNodeParentId = node.data.id;
+          // this.activeNode = node.data;
           // this.pagination.currentPage = 1;
         },
         dblClick: (tree, node, $event) => {
@@ -82,26 +82,29 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   * Reference to Tree Model
   */
   @ViewChild('tree') treeModelRef: TreeComponent;
-  @ViewChild('ul') ulModelRef;
+  // @ViewChild('ul') ulModelRef;
 
-  /*
-   * Reference to bootstrap panel which holds tree component
-   * This is used to calculate visible node inside viewport
-   */
-  private timerTick = 10;
-
-  public dataSet;
-  public debug = false;
+  private timerTick = 3000;
+  public debug = true;
 
   constructor(private dataService: TreeRestService) {
-    // this.dataSet = this._makeDataSet(100);
   }
 
   /*
     * Get data from Rest API
+    * Initialize Events
     */
   ngOnInit() {
-    this._createPaginationModel();
+
+    this.treeModelRef.initialized.subscribe((r) => {
+      console.log('Tree initialized');
+      this._initializePaginationModel(this.firstRootId);
+    });
+
+    this.treeModelRef.toggleExpanded.subscribe((event) => {
+      console.log('Node expanded', event.node.data.id);
+      this._initializePaginationModel(event.node.data.id);
+    });
   }
 
   /*
@@ -109,33 +112,71 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Must be on After View Init
    */
   ngAfterViewInit() {
+  }
+
+  private _ngAfterViewInit() {
     const timer = Observable.timer(0, this.timerTick);
     setTimeout(() => {
       timer.subscribe(t => {
-        this._configVirtualMeasure();
-        // this._configVirtualMeasureFake();
+        this._treeConfiguration();
       });
     }, 1);
   }
 
-  /*
-   * Pagination model per node
-   */
-  private _createPaginationModel() {
+  private _treeConfiguration() {
+    const length = this.paginationTreeModels.length;
 
-    const pagination: PaginationModel = {
-      nodeId: 2,
+    for (let i = 0; i < length; i++) {
+      // console.log(this.paginationTreeModels);
+      // this._configVirtualMeasure();
+      const virtualModel = this._configureVirtualModel();
+      this._configVirtualMeasure(this.paginationTreeModels[i], virtualModel);
+    }
+  }
+
+  /*
+   * Pagination model per parent or root node node
+   */
+  private _initializePaginationModel(parentNodeId) {
+    if (!this._paginationModelExist(parentNodeId)) {
+      this.paginationTreeModels.push(this._createPaginationModel(parentNodeId));
+      this._fetchData(this.paginationTreeModels[this.paginationTreeModels.length - 1]);
+    }
+  }
+
+  /**
+   * Create pagination model for one parent node
+   */
+  private _createPaginationModel(parentNodeId) {
+    const paginationModel: PaginationModel = {
+      nodeId: parentNodeId,
       currentPage: 1,
       totalRecords: -1,
       totalPages: -1,
       recordsPerPage: this.recordsPerPage,
       visitedPages: [],
+      childNodes: [],
       lastChildNodeId: -1,
       isLoading: true
     };
+    return paginationModel;
+  }
 
-    this.paginationModels.push(pagination);
-    this._fetchData(this.paginationModels[0]);
+  /**
+   * Check if pagination model exists
+   * @return Boolean
+   */
+  private _paginationModelExist(parentNodeId) {
+
+    const length = this.paginationTreeModels.length;
+
+    for (let i = 0; i < length; i++) {
+      if (this.paginationTreeModels[i].nodeId === parentNodeId) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /*
@@ -149,14 +190,12 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.totalRecords = result.total;
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
+      model.childNodes.push(result.items);
 
       /*
-       * Find id 1/3 of total results
+       * Find id of 1/3 of total results
        */
       model.oneThird = Math.floor(result.items.length / 3);
-
-      model.lastChildNodeId = result.items[result.items.length - 1].id;
-      model.lastChildNodeId = result.items[0].id;
       model.lastChildNodeId = result.items[model.oneThird].id;
 
       console.log('Data service result: ', result);
@@ -169,6 +208,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       if (this.configVirtualRoot) {
         this.configVirtualRoot = false;
         this.nodeModel = result.items;
+        this._ngAfterViewInit();  // Add timer to measure pagination and virtual model
       } else {
         this.addChildNodes(this.nodeModel, model.nodeId, result.items);
       }
@@ -177,12 +217,162 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
   }
 
+  private _configureVirtualModel() {
+    /*
+     * TreeModel root node used to get real height of one tree node
+     * We are calculating how many nodes can fit into panel
+     */
+    const rootNode = this.treeModelRef.treeModel.getFirstRoot();
+
+    /*
+     * Check if tree root is initialised
+     */
+    // if (!rootNode) {
+    //   return false;
+    // }
+
+    /*
+     * 1. Node height
+     * 2. Panel Height: Bootstrap panel height can be set in css or dynamically. It will always be updated here
+     */
+    const virtualModel: VirtualModel = {
+      nodeHeight: rootNode.height - 10, // 10 px difference exist, check what it is
+      panelHeight: this.treeModelRef.treeModel.virtualScroll.viewportHeight,
+    };
+
+    /*
+     * 3. Get num of visible nodes that can fit in viewport and round to upper
+     */
+    virtualModel.noOfVisibleNodes = Math.ceil(virtualModel.panelHeight / virtualModel.nodeHeight);
+
+    return virtualModel;
+  }
+
+  private _configVirtualMeasure(model: PaginationModel, virtualModel: VirtualModel) {
+
+    /*
+     * Get scroll top of virtual scroll
+     */
+    virtualModel.yBlocks = this.treeModelRef.viewportComponent.virtualScroll.yBlocks;
+    virtualModel.y = this.treeModelRef.viewportComponent.virtualScroll.y;
+    virtualModel.scrollTop = this.treeModelRef.viewportComponent.virtualScroll.viewport.scrollTop;
+
+    /*
+     * Find visible node indexes from - to
+     */
+    virtualModel.indexFrom = Math.ceil(virtualModel.scrollTop / virtualModel.nodeHeight);
+    virtualModel.currentPage = Math.ceil(virtualModel.indexFrom / virtualModel.noOfVisibleNodes) + 1; // page starts from 1
+
+    /*
+     * Load more nodes
+     */
+    // const model = this.paginationModels[0];
+
+    /*
+     * Find index for last visible node in viewport in nodes[]
+     * This enables us to see weather id is or was visible inside viewport
+     */
+    const idsOfVisible = this._idsOfVisible(virtualModel.indexFrom, virtualModel.noOfVisibleNodes, model);
+    const lastViewportVisibleId = idsOfVisible[idsOfVisible.length - 1];
+    const indexOfNode = this._findIndex(lastViewportVisibleId, model);
+    // console.log('indexOfNode: ', indexOfNode);
+
+    // setting index from 0 enables us to check if node passed viewport or visible inside it
+    const indexFrom = 0;
+
+    if (this._isOrWasVisible(indexFrom, indexOfNode, model)) {
+      this._loadMoreNodes(model);
+    }
+
+    if (this.debug) {
+      this._debug(virtualModel);
+    }
+  }
+
+  /*
+   * 1. Check if node is visible inside virtual scroll viewport
+   * TODO: Should be refactored to get real height of each node
+   */
+  private _idsOfVisible(from, noOfVisibleNodes, model: PaginationModel) {
+
+    let ids = [];
+
+    // console.log('--------------');
+    const nodes = model.childNodes;
+    const limit = from + noOfVisibleNodes;
+
+    for (let i = from; i < limit; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        ids.push(nodes[i].id);
+      }
+    }
+
+    return ids;
+  }
+
+  /**
+   * 1. Find index of node inside childNodes array
+   */
+  private _findIndex(nodeId, model) {
+
+    const nodes = model.childNodes;
+
+    for (let i = 0; i < nodes.length; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        // if (this.debug) {
+        //   console.log(nodes[i].name);
+        // }
+        if (nodes[i].id === nodeId) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  /*
+   * 3. Check if node is or was visible inside virtual scroll viewport
+   */
+  private _isOrWasVisible(from, noOfVisibleNodes, model: PaginationModel) {
+
+    // console.log('--------------');
+    const nodes = model.childNodes;
+    const limit = from + noOfVisibleNodes;
+
+    for (let i = from; i < limit; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        // if (this.debug) {
+        //   console.log(nodes[i].name);
+        // }
+        if (nodes[i].id === model.lastChildNodeId) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   /*
    * Load more nodes
    */
-  private _loadMoreNodes() {
-
-    const model: PaginationModel = this.paginationModels[0];
+  private _loadMoreNodes(model: PaginationModel) {
 
     // console.log('_hasMoreNodes: ', this._hasMoreNodes(model));
     // console.log('isLoading: ', model.isLoading);
@@ -203,135 +393,12 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * @return Boolean
    */
   private _hasMoreNodes(model: PaginationModel) {
-    const noOfNodes = this.treeModelRef.treeModel.nodes.length;
-    return noOfNodes < model.totalRecords;
-  }
-
-  private _configVirtualMeasure() {
-
-    /*
-     * TreeModel root node used to get real height of one tree node
-     * We are calculating how many nodes can fit into panel
-     */
-    const rootNode = this.treeModelRef.treeModel.getFirstRoot();
-
-    /*
-     * Check if tree root is initialised
-     */
-    if (!rootNode) {
-      return false;
-    }
-
-    /*
-     * Node height
-     */
-    const virtualModel: VirtualModel = {
-      nodeHeight: rootNode.height - 10 // 10 px difference exist, check what it is
-    };
-
-    /*
-     * Bootstrap panel height can be set in css or dynamically
-     * It will always be updated here
-     */
-    virtualModel.panelHeight = this.treeModelRef.treeModel.virtualScroll.viewportHeight;
-    // console.log('panelHeight: ', virtualModel.panelHeight);
-
-    /*
-     *  Get num of visible nodes in viewport round to upper
-     */
-    virtualModel.noOfVisibleNodes = Math.ceil(virtualModel.panelHeight / virtualModel.nodeHeight);
-    // virtualModel.noOfVisibleNodes = virtualModel.panelHeight / virtualModel.nodeHeight;
-
-    /*
-     * Get scroll top of virtual scroll
-     */
-    virtualModel.yBlocks = this.treeModelRef.viewportComponent.virtualScroll.yBlocks;
-    virtualModel.y = this.treeModelRef.viewportComponent.virtualScroll.y;
-    virtualModel.scrollTop = this.treeModelRef.viewportComponent.virtualScroll.viewport.scrollTop;
-
-    /*
-     * Find visible node indexes from - to
-     */
-    virtualModel.indexFrom = Math.ceil(virtualModel.scrollTop / virtualModel.nodeHeight);
-    virtualModel.currentPage = Math.ceil(virtualModel.indexFrom / virtualModel.noOfVisibleNodes) + 1; // page starts from 1
-
-    /*
-     * Load more nodes
-     */
-    const model = this.paginationModels[0];
-
-    /*
-     * Find index for last visible node in viewport in nodes[]
-     * This enables us to see weather id is or was visible inside viewport
-     */
-    const idsOfVisible = this._idsOfVisible(virtualModel.indexFrom, virtualModel.noOfVisibleNodes);
-    const lastViewportVisibleId = idsOfVisible[idsOfVisible.length - 1];
-    const indexOfNode = this._findIndex(lastViewportVisibleId);
-    // console.log('indexOfNode: ', indexOfNode);
-
-    // setting index from 0 enables us to check if node passed viewport or visible inside it
-    const indexFrom = 0;
-
-    if (this._isVisible(indexFrom, indexOfNode, model.lastChildNodeId)) {
-      this._loadMoreNodes();
-    }
-
-    if (this.debug) {
-      this._debug(virtualModel);
-    }
-  }
-
-  private _configVirtualMeasureFake() {
-
-    /*
-     * Node height
-     */
-    const virtualModel: VirtualModel = {
-      nodeHeight: 26
-    };
-
-    /*
-     * Bootstrap panel height can be set in css or dynamically
-     * It will always be updated here
-     */
-    virtualModel.panelHeight = 26;
-
-    /*
-     *  Get num of visible nodes in viewport round to upper
-     */
-    virtualModel.noOfVisibleNodes = Math.ceil(virtualModel.panelHeight / virtualModel.nodeHeight);
-    // virtualModel.noOfVisibleNodes = virtualModel.panelHeight / virtualModel.nodeHeight;
-
-    /*
-     * Get scroll top of virtual scroll
-     */
-    virtualModel.scrollTop = this.ulModelRef.nativeElement.getBoundingClientRect().top;
-    virtualModel.scrollTop -= 173;
-    if (virtualModel.scrollTop !== 0) {
-      virtualModel.scrollTop *= -1;
-    }
-    console.log(virtualModel.scrollTop);
-
-    /*
-     * Find visible node indexes from - to
-     */
-    virtualModel.indexFrom = Math.ceil(virtualModel.scrollTop / virtualModel.nodeHeight);
-    virtualModel.currentPage = Math.ceil(virtualModel.indexFrom / virtualModel.noOfVisibleNodes) + 1; // page starts from 1
-
-    /*
-     * Load more nodes
-     */
-    const model = this.paginationModels[0];
-    if (this._isVisibleFake(virtualModel.indexFrom, virtualModel.noOfVisibleNodes, -1)) {
-      // this._loadMoreNodes();
-    }
-
-    this._debug(virtualModel);
+    return model.childNodes.length < model.totalRecords;
   }
 
   /*
-    * Debug
-    */
+  * Debug
+  */
   private _debug(virtualModel) {
     console.log('--------------');
     for (const i in virtualModel) {
@@ -341,108 +408,6 @@ export class VirtualComponent implements OnInit, AfterViewInit {
         }
       }
     }
-  }
-
-  /*
-   * Check if node is visible inside virtual scroll viewport
-   */
-  private _isVisible(from, noOfVisibleNodes, nodeId) {
-
-    // console.log('--------------');
-    const nodes = this.treeModelRef.treeModel.nodes;
-    const limit = from + noOfVisibleNodes;
-
-    for (let i = from; i < limit; i++) {
-
-      /*
-       * Due to calculation of margin top in virtual scroll
-       * It might be undefined
-       */
-      if (nodes[i]) {
-        if (this.debug) {
-          console.log(nodes[i].name);
-        }
-        if (nodes[i].id === nodeId) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /*
-   * Check if node is visible inside virtual scroll viewport
-   */
-  private _idsOfVisible(from, noOfVisibleNodes) {
-
-    let ids = [];
-
-    // console.log('--------------');
-    const nodes = this.treeModelRef.treeModel.nodes;
-    const limit = from + noOfVisibleNodes;
-
-    for (let i = from; i < limit; i++) {
-
-      /*
-       * Due to calculation of margin top in virtual scroll
-       * It might be undefined
-       */
-      if (nodes[i]) {
-        ids.push(nodes[i].id);
-      }
-    }
-
-    return ids;
-  }
-
-  private _findIndex(nodeId) {
-
-    const nodes = this.treeModelRef.treeModel.nodes;
-
-    for (let i = 0; i < nodes.length; i++) {
-
-      /*
-       * Due to calculation of margin top in virtual scroll
-       * It might be undefined
-       */
-      if (nodes[i]) {
-        if (this.debug) {
-          console.log(nodes[i].name);
-        }
-        if (nodes[i].id === nodeId) {
-          return i;
-        }
-      }
-    }
-
-    return -1;
-  }
-
-  /*
-   * Check if node is visible inside virtual scroll viewport
-   */
-  private _isVisibleFake(from, noOfVisibleNodes, nodeId) {
-
-    // console.log('--------------');
-    const nodes = this.dataSet;
-    const limit = from + noOfVisibleNodes;
-
-    for (let i = from; i < limit; i++) {
-
-      /*
-       * Due to calculation of margin top in virtual scroll
-       * It might be undefined
-       */
-      if (nodes[i]) {
-        console.log(nodes[i].name);
-        // if (nodes[i].id === nodeId) {
-        //   return true;
-        // }
-      }
-    }
-
-    return false;
   }
 
 
@@ -468,11 +433,11 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   addChildNodes(nodeModel, parentId, childNodes) {
-    // const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
+    const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
 
-    this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
+    // this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
 
-    // this.nodeModel = updatedModel;
+    this.nodeModel = updatedModel;
     this.treeModelRef.treeModel.update();
   }
 

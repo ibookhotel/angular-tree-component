@@ -5,7 +5,8 @@ export interface PaginationModel {
   totalPages: number;
   recordsPerPage: number;
   visitedPages: number[];
-  lastChildNodeId: number;
-  oneThird?: number;
   isLoading: boolean;
+  oneThird?: number;
+  childNodes: any;
+  lastChildNodeId?: number;
 }
