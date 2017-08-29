@@ -1,0 +1,83 @@
+<h1 class="text-success">ARIM Dom</h1>
+<p class="lead">UX driven development of Tree View Component</p>
+<hr>
+
+<content>
+
+  <div class="panel panel-info">
+    <div class="panel-body">
+      <!--<div class="alert alert-info loading"-->
+           <!--*ngIf="(this.paginationTreeModels[this.activePaginationTreeModelId] == null) ? false : this.paginationTreeModels[this.activePaginationTreeModelId].isLoading">-->
+        <!--Loading...-->
+      <!--</div>-->
+
+      <tree-root #tree
+                 [nodes]="nodes"
+                 [options]="options"
+                 [focused]="true"
+      >
+
+        <ng-template #treeNodeFullTemplate
+                     let-node
+                     let-index="index"
+                     let-templates="templates">
+
+          <div class="tree-node" id="n-{{node.data.id}}">
+
+            <tree-node-drop-slot
+              *ngIf="index === 0"
+              [dropIndex]="node.index"
+              [node]="node.parent">
+            </tree-node-drop-slot>
+
+
+
+
+            <div class="node-content-wrapper"
+                 [class.node-content-wrapper-active]="node.isActive"
+                 [class.node-content-wrapper-focused]="node.isFocused"
+            >
+
+              <tree-node-expander [node]="node"></tree-node-expander>
+
+              <span [class.title]="true">{{ node.data.name }}</span>
+
+            </div>
+
+            <tree-node-children [node]="node" [templates]="templates"></tree-node-children>
+
+            <tree-node-drop-slot [dropIndex]="node.index + 1" [node]="node.parent"></tree-node-drop-slot>
+
+          </div>
+
+        </ng-template>
+
+
+      </tree-root>
+
+      <!--<ul class="ul" #ul>-->
+      <!--<li *ngFor="let row of dataSet">-->
+      <!--{{row.name}}-->
+      <!--</li>-->
+      <!--</ul>-->
+
+    </div>
+    <!--<div class="panel-footer"-->
+         <!--*ngIf="this.paginationTreeModels[this.activePaginationTreeModelId] != null">-->
+      <!--<div class="right">-->
+        <!--Number of loaded pages:-->
+        <!--<strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].currentPage}}</strong> / <strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].totalPages}}</strong>-->
+      <!--</div>-->
+      <!--Viewing node: <strong>Dummy name</strong>-->
+    <!--</div>-->
+  </div>
+
+  <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->
+
+  <!--<pagination [totalItems]="paginationModels[0].totalRecords"-->
+  <!--[(ngModel)]="paginationModels[0].currentPage"-->
+  <!--(pageChanged)="pageChanged($event)"-->
+  <!--&gt;</pagination>-->
+
+
+</content>

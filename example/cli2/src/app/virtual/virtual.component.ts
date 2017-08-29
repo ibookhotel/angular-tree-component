@@ -126,10 +126,8 @@ export class VirtualComponent implements OnInit, AfterViewInit {
 
   private _treeConfiguration() {
     const length = this.paginationTreeModels.length;
-    // console.log(this.paginationTreeModels);
 
     for (let i = 0; i < length; i++) {
-      // this._configVirtualMeasure();
       const virtualModel = this._configureVirtualModel();
       this._configVirtualMeasure(this.paginationTreeModels[i], virtualModel);
     }
@@ -177,7 +175,6 @@ export class VirtualComponent implements OnInit, AfterViewInit {
         return true;
       }
     }
-
     return false;
   }
 
@@ -195,9 +192,9 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.childNodes = model.childNodes.concat(result.items);
 
       /*
-       * Find id of 1/3 of total results
+       * Find id of 1/4 of total results
        */
-      model.oneThird = Math.floor(result.items.length / 3);
+      model.oneThird = Math.floor(result.items.length / 5);
       model.lastChildNodeId = result.items[model.oneThird].id;
 
       console.log('Data service result: ', result);
@@ -211,6 +208,12 @@ export class VirtualComponent implements OnInit, AfterViewInit {
         this.configVirtualRoot = false;
         this.nodeModel = result.items;
         this._ngAfterViewInit();  // Add timer to measure pagination and virtual model
+
+        setTimeout(() => {
+          this.treeModelRef.treeModel.focusDrillDown();
+          this.treeModelRef.treeModel.focusDrillDown();
+        }, 300);
+
       } else {
         this.addChildNodes(this.nodeModel, model.nodeId, result.items);
       }
@@ -440,11 +443,13 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   addChildNodes(nodeModel, parentId, childNodes) {
-    // const updatedModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
 
-    this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
+    if (parentId === this.firstRootId) {
+      this.treeModelRef.treeModel.nodes = this.treeModelRef.treeModel.nodes.concat(childNodes);
+    } else {
+      this.nodeModel = this.setChildNodesIfAny(nodeModel, parentId, childNodes);
+    }
 
-    // this.nodeModel = updatedModel;
     this.treeModelRef.treeModel.update();
   }
 

@@ -23,7 +23,7 @@ import { DragComponent } from './drag/drag.component';
 */
 import { useStrict } from 'mobx';
 import { EmptyComponent } from './empty/empty.component';
-import {VirtualComponent} from './virtual/virtual.component';
+import {DomComponent} from './dom/dom.component';
 useStrict(true);
 
 
@@ -41,7 +41,7 @@ useStrict(true);
     SaveRestoreComponent,
     CheckboxesComponent,
     DragComponent,
-    VirtualComponent
+    DomComponent
   ],
   imports: [
     BrowserModule,

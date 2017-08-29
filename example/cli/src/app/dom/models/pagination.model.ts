@@ -1,6 +1,7 @@
+import {ChildModel} from './child.model';
+
 export interface PaginationModel {
   nodeId: any;
-  nodeName?: any;
   currentPage: number;
   totalRecords: number;
   totalPages: number;
@@ -8,6 +9,6 @@ export interface PaginationModel {
   visitedPages: number[];
   isLoading: boolean;
   oneThird?: number;
-  childNodes: any;
-  lastChildNodeId?: number;
+  childNodes: ChildModel[];
+  triggerElement?: ChildModel;
 }
