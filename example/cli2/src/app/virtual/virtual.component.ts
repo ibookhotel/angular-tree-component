@@ -34,7 +34,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Created for each parent node
    */
   private paginationModels: PaginationModel[] = [];
-  private recordsPerPage = 20;
+  private recordsPerPage = 100;
 
   /**
    * Tree View Component Options
@@ -149,8 +149,15 @@ export class VirtualComponent implements OnInit, AfterViewInit {
       model.totalRecords = result.total;
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
+
+      /*
+       * Find id 1/3 of total results
+       */
+      model.oneThird = Math.floor(result.items.length / 3);
+
       model.lastChildNodeId = result.items[result.items.length - 1].id;
       model.lastChildNodeId = result.items[0].id;
+      model.lastChildNodeId = result.items[model.oneThird].id;
 
       console.log('Data service result: ', result);
       console.log('Pagination model: ', model);
@@ -192,7 +199,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   /*
-   * Return false or pagination model
+   * Check if there is more records to laod
    * @return Boolean
    */
   private _hasMoreNodes(model: PaginationModel) {
@@ -252,7 +259,20 @@ export class VirtualComponent implements OnInit, AfterViewInit {
      * Load more nodes
      */
     const model = this.paginationModels[0];
-    if (this._isVisible(virtualModel.indexFrom, virtualModel.noOfVisibleNodes, model.lastChildNodeId)) {
+
+    /*
+     * Find index for last visible node in viewport in nodes[]
+     * This enables us to see weather id is or was visible inside viewport
+     */
+    const idsOfVisible = this._idsOfVisible(virtualModel.indexFrom, virtualModel.noOfVisibleNodes);
+    const lastViewportVisibleId = idsOfVisible[idsOfVisible.length - 1];
+    const indexOfNode = this._findIndex(lastViewportVisibleId);
+    // console.log('indexOfNode: ', indexOfNode);
+
+    // setting index from 0 enables us to check if node passed viewport or visible inside it
+    const indexFrom = 0;
+
+    if (this._isVisible(indexFrom, indexOfNode, model.lastChildNodeId)) {
       this._loadMoreNodes();
     }
 
@@ -324,7 +344,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   /*
-   * Check if node is visibale inside virtual scroll viewport
+   * Check if node is visible inside virtual scroll viewport
    */
   private _isVisible(from, noOfVisibleNodes, nodeId) {
 
@@ -352,7 +372,55 @@ export class VirtualComponent implements OnInit, AfterViewInit {
   }
 
   /*
-   * Check if node is visibale inside virtual scroll viewport
+   * Check if node is visible inside virtual scroll viewport
+   */
+  private _idsOfVisible(from, noOfVisibleNodes) {
+
+    let ids = [];
+
+    // console.log('--------------');
+    const nodes = this.treeModelRef.treeModel.nodes;
+    const limit = from + noOfVisibleNodes;
+
+    for (let i = from; i < limit; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        ids.push(nodes[i].id);
+      }
+    }
+
+    return ids;
+  }
+
+  private _findIndex(nodeId) {
+
+    const nodes = this.treeModelRef.treeModel.nodes;
+
+    for (let i = 0; i < nodes.length; i++) {
+
+      /*
+       * Due to calculation of margin top in virtual scroll
+       * It might be undefined
+       */
+      if (nodes[i]) {
+        if (this.debug) {
+          console.log(nodes[i].name);
+        }
+        if (nodes[i].id === nodeId) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  /*
+   * Check if node is visible inside virtual scroll viewport
    */
   private _isVisibleFake(from, noOfVisibleNodes, nodeId) {
 
@@ -395,7 +463,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
     // model.currentPage = event.page;
     // const notVisited = model.visitedPages.indexOf(model.currentPage) === -1;
     // if (notVisited) {
-      // this._fetchData(model);
+    // this._fetchData(model);
     // }
   }
 

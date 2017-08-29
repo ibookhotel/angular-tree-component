@@ -36,6 +36,7 @@ tree-node-wrapper {
 
 .panel-body {
   height: 290px;
+  /*height: 60px;*/
   position: relative;
 }
 
