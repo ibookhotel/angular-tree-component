@@ -34,7 +34,7 @@ export class VirtualComponent implements OnInit, AfterViewInit {
    * Created for each parent node
    */
   private paginationModels: PaginationModel[] = [];
-  private recordsPerPage = 100;
+  private recordsPerPage = 150;
 
   /**
    * Tree View Component Options

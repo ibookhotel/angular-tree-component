@@ -44,8 +44,8 @@ export class TreeRestService {
       limit = 10;
     }
 
-    let endpoint = 'http://acuta-rest.local.bildhosting.me/contextual-data';
-    // let endpoint = 'http://localhost:6634/contextual-data';
+    // let endpoint = 'http://acuta-rest.local.bildhosting.me/contextual-data';
+    let endpoint = 'http://localhost:6634/contextual-data';
     endpoint += '?parentId=' + parentId + '&limit=' + limit + '&offset=' + this.getOffset(curPage, limit);
     return this.getNodes(endpoint);
   }
