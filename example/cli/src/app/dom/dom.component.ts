@@ -22,7 +22,6 @@ export class DomComponent implements OnInit, AfterViewInit {
   private models: PaginationModel[] = [];
   public nodes: TreeViewData[] = [];
 
-
   /*
    * Options
    */
@@ -33,11 +32,11 @@ export class DomComponent implements OnInit, AfterViewInit {
   /*
    * Initial settings
    */
-  private timerTick = 2000;
+  private timerTick = 100;
   public debug = true;
   private activePaginationTreeModelId = 0;
-  private recordsPerPage = 10;
-  private firstRootId = 1;
+  private recordsPerPage = 150;
+  private firstRootId = 0;
   public configRoot = true;  // Initialise only once
 
   /*
@@ -89,31 +88,37 @@ export class DomComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // console.group('Model node ' + model.nodeId);
+    const idTrigger = 'n-' + String(model.triggerElement.data.id);
+    const idNode = 'n-' + String(model.nodeId);
+    const triggerElement = document.getElementById(idTrigger);
+    const nodeElement = document.getElementById(idNode);
 
-    const id = 'n-' + String(model.triggerElement.data.id);
-    const element = document.getElementById(id);
-    // console.log(id, element);
-    this._isDom(element, model);
-    // console.groupEnd();
+    if (nodeElement == null || triggerElement == null) {
+      return false;
+    }
 
-  }
+    // console.log(triggerElement, nodeElement);
 
-  private _isDom(element, model: PaginationModel) {
-    const options = {offset: {top: 0, right: 0, bottom: 0, left: 0}, threshold: 0};
-    const inViewport = this._inViewport(element, options);
-    console.log(inViewport);
-    // if (inViewport) {
-    //   this._loadNodes(model);
-    // }
-  }
+    const panel = document.getElementById('panel');
+    //
+    const panelRect = panel.getBoundingClientRect(),
+      elemRectTrigger = triggerElement.getBoundingClientRect(),
+      elemRectNode = nodeElement.getBoundingClientRect(),
+      offsetTrigger = elemRectTrigger.top - panelRect.bottom,
+      offsetNode = elemRectNode.top - panelRect.top,
+      offsetNodeH = elemRectNode.height;
 
-  private _isScrolledIntoView(el) {
-    const elemTop = el.getBoundingClientRect().top;
-    const elemBottom = el.getBoundingClientRect().bottom;
+    // console.log(triggerElement, 'Element trigger is ' + offsetTrigger + ' vertical pixels from <panel>');
+    // console.log(nodeElement, 'Element node is ' + offsetNode + ' vertical pixels from <panel>', offsetNodeH);
 
-    const isVisible = (elemTop >= 0) && (elemBottom <= window.innerHeight);
-    return isVisible;
+    if (offsetNode + offsetNodeH > 0) {
+      // console.log('Parent node ' + idNode + ' is visible');
+      if (offsetTrigger <= 0) {
+        this._loadNodes(model);
+      }
+    }
+
+
   }
 
   private _inViewport(element, options) {
@@ -168,7 +173,8 @@ export class DomComponent implements OnInit, AfterViewInit {
       recordsPerPage: this.recordsPerPage,
       visitedPages: [],
       childNodes: [],
-      isLoading: true
+      isLoading: true,
+      nodeElement: document.getElementById('n-' + nodeId)
     };
   }
 
