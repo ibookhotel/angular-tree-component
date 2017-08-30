@@ -28,7 +28,7 @@ export class DomComponent implements OnInit, AfterViewInit {
   public options: ITreeOptions = {
 
     getChildren: (node: TreeNode) => {
-      console.log('Get children');
+      // console.log('Get children');
     },
     actionMapping: {
       mouse: {
@@ -65,10 +65,10 @@ export class DomComponent implements OnInit, AfterViewInit {
   /*
    * Initial settings
    */
-  private timerTick = 100;
+  private timerTick = 500;
   public debug = true;
   private activeModelId = 0;
-  private recordsPerPage = 150;
+  private recordsPerPage = 10;
   private firstRootId = 0;
   public configRoot = true;  // Initialise only once
 
@@ -89,7 +89,7 @@ export class DomComponent implements OnInit, AfterViewInit {
     // Node expanded
     this.treeEl.toggleExpanded.subscribe((event) => {
       this._makeModel(event.node.data.id);
-      this.activeModelId = event.node.data.id;
+      // this.activeModelId = event.node.data.id;
     });
   }
 
@@ -113,6 +113,14 @@ export class DomComponent implements OnInit, AfterViewInit {
     }
 
     /*
+     * Handle virtual root
+     */
+    // if (model.nodeId = this.firstRootId) {
+    //   this._triggerRoot(model);
+    //   return false;
+    // }
+
+    /*
      * Get DOM references: trigger, parent node and panel
      */
     const idTrigger = 'n-' + String(model.triggerElement.data.id);
@@ -124,6 +132,8 @@ export class DomComponent implements OnInit, AfterViewInit {
     if (nodeElement == null || triggerElement == null) {
       return false;
     }
+
+    // console.log('Handle child nodes ' + idNode, triggerElement);
 
     /*
      * Get position of parent and trigger node
@@ -140,11 +150,53 @@ export class DomComponent implements OnInit, AfterViewInit {
       * 1. If trigger element in or passed viewport
       * 2. Parent node is visible in viewport
      */
+
+    // console.log(offsetTrigger, offsetNode);
+
     if (offsetNode + offsetNodeH > 0) {
       if (offsetTrigger <= 0) {
         this._loadNodes(model);
       }
     }
+  }
+
+  private _triggerRoot(model: PaginationModel) {
+
+    /*
+     * Get DOM references: trigger, parent node and panel
+     */
+    const idTrigger = 'n-' + String(model.triggerElement.data.id);
+    const triggerElement = document.getElementById(idTrigger);
+    const panel = document.getElementById('panel');
+
+    console.log('Handle root nodes ' + model.nodeId, triggerElement);
+    /*
+     * Handle child nodes triggers
+     */
+    if (triggerElement == null) {
+      return false;
+    }
+
+    /*
+     * Get position of parent and trigger node
+     */
+    const panelRect = panel.getBoundingClientRect(),
+      elemRectTrigger = triggerElement.getBoundingClientRect(),
+      offsetTrigger = elemRectTrigger.top - panelRect.bottom;
+
+    /*
+     * Load more nodes
+      * 1. If trigger element in or passed viewport
+      * 2. Parent node is visible in viewport
+     */
+
+    console.log(offsetTrigger);
+
+    // if (offsetNode + offsetNodeH > 0) {
+    if (offsetTrigger <= 0) {
+      this._loadNodes(model);
+    }
+    // }
   }
 
   /*
@@ -223,8 +275,8 @@ export class DomComponent implements OnInit, AfterViewInit {
       };
       model.childNodes.push(child);
 
-      // Add model trigger element to monitor
-      // Based on this element position in scroll we are triggering load more option
+      // Add model trigger element
+      // Based on element position in scroll we are triggering load more option
       if (i === triggerIndex) {
         model.triggerElement = child;
       }
@@ -270,13 +322,11 @@ export class DomComponent implements OnInit, AfterViewInit {
    * Append tree model with new nodes
    */
   addChildNodes(nodes, parentId, childNodes) {
-
     if (parentId === this.firstRootId) {
       this.nodes = this.nodes.concat(childNodes);
     } else {
       this.nodes = this.setChildNodesIfAny(nodes, parentId, childNodes);
     }
-
     this.treeEl.treeModel.update();
   }
 
@@ -284,14 +334,11 @@ export class DomComponent implements OnInit, AfterViewInit {
    * Recursively go trough tree model
    */
   setChildNodesIfAny(nodes, id, newNodes) {
-
     nodes.forEach((node) => {
-
       /**
        * Check if this is searched element
        */
       if (node.id === id) {
-
         /**
          * Set or append nodes to children attribute
          */
@@ -303,16 +350,13 @@ export class DomComponent implements OnInit, AfterViewInit {
 
         return nodes;
       }
-
       /**
        * Traverse trough children element recursively
        */
       if (node.children != null) {
         node.children = this.setChildNodesIfAny(node.children, id, newNodes);
       }
-
     });
-
     return nodes;
   }
 }

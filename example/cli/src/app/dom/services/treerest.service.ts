@@ -5,7 +5,6 @@ import {
 } from '@angular/http';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/Rx';
-import {TreeViewData} from '../models/treeview-data.model';
 
 @Injectable()
 export class TreeRestService {
@@ -59,7 +58,6 @@ export class TreeRestService {
       .map((response) => {
         if (response.ok) {
           return response.json();
-          // return response.json().items as TreeViewData[];
         } else {
           return this.logError(response);
         }
