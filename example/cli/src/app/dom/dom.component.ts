@@ -41,7 +41,6 @@ export class DomComponent implements OnInit, AfterViewInit {
               console.log(node);
             }
           }
-
         },
         dblClick: (tree, node, $event) => {
           if (!node.hasChildren) {
@@ -74,16 +73,16 @@ export class DomComponent implements OnInit, AfterViewInit {
    * Initial settings
    */
   private timerTick = 100;
-  private recordsPerPage = 75;
+  private recordsPerPage = 150;
   private firstRootId = 0;
   private configRoot = true;  // Initialise only once
   private debug = false;
 
-  protected activeModelNodeId = 0;
+  protected activeModelNodeId = null;
   protected selectedName = '';
   protected loadedRecords = 0;
   protected totalRecords = 0;
-  protected itemString = 'item';
+  protected itemString = 'item';  // or items
   protected isLoading = true;
 
   /*
@@ -92,6 +91,7 @@ export class DomComponent implements OnInit, AfterViewInit {
   @ViewChild('tree') treeEl: TreeComponent;
 
   constructor(private dataService: TreeRestService) {
+    this.activeModelNodeId = this.firstRootId;
   }
 
   ngOnInit() {
@@ -117,7 +117,14 @@ export class DomComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       timer.subscribe(t => {
         for (let i = 0; i < this.models.length; i++) {
+          if (this.debug) {
+            console.group('Model ' + this.models[i].nodeId);
+          }
           this._triggers(this.models[i]);
+          if (this.debug) {
+            console.log(this.models[i]);
+            console.groupEnd();
+          }
         }
         this._activeModel(this.activeModelNodeId);  // Update model preview
       });
@@ -126,33 +133,34 @@ export class DomComponent implements OnInit, AfterViewInit {
 
   /*
    * Calculation for loading more models
+   * Note: padding to #panel should be set to 0 for pixel precise calculation
    */
   private _triggers(model: PaginationModel) {
 
 
-    if (model.triggerElement == null) {
+    if (model.triggerElement == null) {   // model not initialized yet
       return false;
     }
 
     if (this.debug) {
-      console.log('Active Model Id: ', this.activeModelNodeId);
+      // console.log('Active Model Id: ', this.activeModelNodeId);
     }
 
     /*
      * Handle virtual root
      */
-    // if (model.nodeId = this.firstRootId) {
-    //   this._triggerRoot(model);
-    //   return false;
-    // }
+    if (model.nodeId === this.firstRootId) {
+      this._triggerRoot(model);
+      return false;
+    }
 
     /*
      * Get DOM references: trigger, parent node and panel
      */
-    const idTrigger = 'n-' + String(model.triggerElement.data.id);
-    const idNode = 'n-' + String(model.nodeId);
-    const triggerElement = document.getElementById(idTrigger);
-    const nodeElement = document.getElementById(idNode);
+    const triggerId = 'n-' + String(model.triggerElement.data.id);
+    const nodeId = 'n-' + String(model.nodeId);
+    const triggerElement = document.getElementById(triggerId);
+    const nodeElement = document.getElementById(nodeId);
     const panel = document.getElementById('panel');
 
     if (this.debug) {
@@ -167,17 +175,15 @@ export class DomComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // console.log('Handle child nodes ' + idNode, triggerElement);
-
     /*
      * Get position of parent and trigger node
      */
     const panelRect = panel.getBoundingClientRect(),
-      elemRectTrigger = triggerElement.getBoundingClientRect(),
-      elemRectNode = nodeElement.getBoundingClientRect(),
-      offsetTrigger = elemRectTrigger.top - panelRect.bottom,
-      offsetNode = elemRectNode.top - panelRect.top,
-      offsetNodeH = elemRectNode.height;
+      triggerRect = triggerElement.getBoundingClientRect(),
+      nodeRect = nodeElement.getBoundingClientRect(),
+      triggerOffset = triggerRect.top - panelRect.bottom,
+      nodeOffset = nodeRect.top - panelRect.top,
+      nodeHeight = nodeRect.height;
 
     /*
      * Load more nodes
@@ -187,25 +193,28 @@ export class DomComponent implements OnInit, AfterViewInit {
 
     // console.log(offsetTrigger, offsetNode);
 
-    if (offsetNode + offsetNodeH > 0) {
-      if (offsetTrigger <= 0) {
+    if (nodeOffset + nodeHeight > 0) {  // parent node offset
+      if (triggerOffset <= 0) {         // trigger element scroll offset
         this._loadNodes(model);
       }
     }
   }
 
+  /*
+   * Calculation for loading more root models
+   * Note: padding to #panel should be set to 0 for pixel precise calculation
+   */
   private _triggerRoot(model: PaginationModel) {
 
     /*
-     * Get DOM references: trigger, parent node and panel
-     */
-    const idTrigger = 'n-' + String(model.triggerElement.data.id);
-    const triggerElement = document.getElementById(idTrigger);
+      * Get DOM references: trigger, parent node and panel
+      */
+    const triggerId = 'n-' + String(model.triggerElement.data.id);
+    const triggerElement = document.getElementById(triggerId);
     const panel = document.getElementById('panel');
 
-    console.log('Handle root nodes ' + model.nodeId, triggerElement);
     /*
-     * Handle child nodes triggers
+     * Trigger element is null when node is collapsed
      */
     if (triggerElement == null) {
       return false;
@@ -215,22 +224,21 @@ export class DomComponent implements OnInit, AfterViewInit {
      * Get position of parent and trigger node
      */
     const panelRect = panel.getBoundingClientRect(),
-      elemRectTrigger = triggerElement.getBoundingClientRect(),
-      offsetTrigger = elemRectTrigger.top - panelRect.bottom;
+      triggerRect = triggerElement.getBoundingClientRect(),
+      triggerOffset = triggerRect.top - panelRect.bottom;
 
     /*
      * Load more nodes
       * 1. If trigger element in or passed viewport
-      * 2. Parent node is visible in viewport
      */
 
-    console.log(offsetTrigger);
+    if (this.debug) {
+      console.log('triggerElement: ', triggerElement, triggerOffset);
+    }
 
-    // if (offsetNode + offsetNodeH > 0) {
-    if (offsetTrigger <= 0) {
+    if (triggerOffset <= 0) {
       this._loadNodes(model);
     }
-    // }
   }
 
   /*
@@ -250,7 +258,6 @@ export class DomComponent implements OnInit, AfterViewInit {
   private _model(nodeId) {
     return {
       nodeId: nodeId,
-      nodeName: '',
       currentPage: 1,
       totalRecords: 0,
       loadedRecords: 0,
@@ -274,6 +281,8 @@ export class DomComponent implements OnInit, AfterViewInit {
        * Populate paging model
        */
       model.isLoading = false;
+      this.activeModelNodeId = model.nodeId;
+      this._activeModel(this.activeModelNodeId);  // Update model preview
       model.totalRecords = result.total;
       model.loadedRecords += result.items.length;
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
@@ -285,8 +294,8 @@ export class DomComponent implements OnInit, AfterViewInit {
             this.configRoot = false;
             this.nodes = result.items;
             setTimeout(() => {
-              // this.treeEl.treeModel.focusDrillDown();
-              // this.treeEl.treeModel.focusDrillDown();
+              this.treeEl.treeModel.focusDrillDown();
+              this.treeEl.treeModel.focusDrillDown();
             }, 300);
 
           } else {
@@ -405,14 +414,17 @@ export class DomComponent implements OnInit, AfterViewInit {
    * @return String
    */
   protected _activeModel(nodeId) {
+
+    if (nodeId == null) {   // model not initialized yet
+      return false;
+    }
+
     this.models.forEach(model => {
       if (model.nodeId === nodeId) {
         this.loadedRecords = model.loadedRecords;
         this.totalRecords = model.totalRecords;
         this.itemString = model.totalRecords > 1 ? 'items' : 'item';
         this.isLoading = model.isLoading;
-        // console.log('Found:', model, model[property]);
-        // return String(model[property]);
       }
     });
   }
