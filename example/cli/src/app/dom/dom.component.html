@@ -4,20 +4,12 @@
 
 <content>
 
-  <div id="parent">
-    la la la
-    <br>
-    <div id="child">
-      ok ok ok
-    </div>
-  </div>
-
   <div class="panel panel-info">
     <div class="panel-body" id="panel">
-      <!--<div class="alert alert-info loading"-->
-      <!--*ngIf="(this.paginationTreeModels[this.activePaginationTreeModelId] == null) ? false : this.paginationTreeModels[this.activePaginationTreeModelId].isLoading">-->
-      <!--Loading...-->
-      <!--</div>-->
+      <div class="alert alert-info loading"
+           *ngIf="(this.models[this.activeModelId] == null) ? false : this.models[this.activeModelId].isLoading">
+        Loading...
+      </div>
 
       <tree-root #tree
                  [nodes]="nodes"
@@ -38,10 +30,23 @@
               [node]="node.parent">
             </tree-node-drop-slot>
 
+            <div class="icon-wrapper">
+              <img *ngIf="node.data.type === 'folder'" [src]="'assets/images/icons/folder-open.png'"/>
+              <img *ngIf="node.data.type === 'root'" [src]="'assets/images/icons/folder-root.png'"/>
+              <img *ngIf="node.data.type === 'document'" [src]="'assets/images/icons/pdf.gif'"/>
+            </div>
+
 
             <div class="node-content-wrapper"
                  [class.node-content-wrapper-active]="node.isActive"
                  [class.node-content-wrapper-focused]="node.isFocused"
+                 (click)="node.mouseAction('click', $event)"
+                 (dblclick)="node.mouseAction('dblClick', $event)"
+                 (contextmenu)="node.mouseAction('contextMenu', $event)"
+                 (treeDrop)="node.onDrop($event)"
+                 [treeAllowDrop]="node.allowDrop"
+                 [treeDrag]="node"
+                 [treeDragEnabled]="node.allowDrag()"
             >
 
               <tree-node-expander [node]="node"></tree-node-expander>
@@ -58,26 +63,19 @@
 
         </ng-template>
 
-
       </tree-root>
 
-      <!--<ul class="ul" #ul>-->
-      <!--<li *ngFor="let row of dataSet">-->
-      <!--{{row.name}}-->
-      <!--</li>-->
-      <!--</ul>-->
-
-
-
     </div>
-    <!--<div class="panel-footer"-->
-    <!--*ngIf="this.paginationTreeModels[this.activePaginationTreeModelId] != null">-->
-    <!--<div class="right">-->
-    <!--Number of loaded pages:-->
-    <!--<strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].currentPage}}</strong> / <strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].totalPages}}</strong>-->
-    <!--</div>-->
-    <!--Viewing node: <strong>Dummy name</strong>-->
-    <!--</div>-->
+
+    <div class="panel-footer"
+         *ngIf="this.models[this.activeModelId] != null">
+      <div class="right">
+        Number of loaded pages:
+        <strong>{{this.models[this.activeModelId].currentPage}}</strong> / <strong>{{this.models[this.activeModelId].totalPages}}</strong>
+      </div>
+      Viewing node: <strong>Dummy name</strong>
+    </div>
+
   </div>
 
   <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->

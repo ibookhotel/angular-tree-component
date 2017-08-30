@@ -8,7 +8,7 @@ export interface PaginationModel {
   recordsPerPage: number;
   visitedPages: number[];
   isLoading: boolean;
-  oneThird?: number;
+  oneFifth?: number;
   childNodes: ChildModel[];
   triggerElement?: ChildModel;
 }
