@@ -59,7 +59,7 @@ export class DomComponent implements OnInit, AfterViewInit {
     allowDrop: (node) => {
       return true;
     },
-    useVirtualScroll: false,
+    useVirtualScroll: true,
     nodeHeight: 30,
     dropSlotHeight: 3,
     animateExpand: true,
@@ -72,9 +72,9 @@ export class DomComponent implements OnInit, AfterViewInit {
   /*
    * Initial settings
    */
-  private timerTick = 100;
+  private timerTick = 10;
   private recordsPerPage = 150;
-  private firstRootId = 0;
+  private firstRootId = 1;
   private configRoot = true;  // Initialise only once
   private debug = false;
 
