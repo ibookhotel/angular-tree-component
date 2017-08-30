@@ -1,15 +1,12 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {TreeRestService} from './services/treerest.service';
 import {TreeViewData} from './models/treeview-data.model';
 import {PaginationModel} from './models/pagination.model';
-import {ITreeOptions, TREE_ACTIONS, TreeComponent, TreeNode} from 'angular-tree-component';
+import {ITreeOptions, TreeComponent} from 'angular-tree-component';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/Rx';
-import {VirtualModel} from './models/virtual.model';
-import {reaction, autorun} from 'mobx';
+import {reaction} from 'mobx';
 import {ChildModel} from './models/child.model';
-
-// import {inView} from 'in-view/src';
 
 @Component({
   selector: 'app-basictree',
@@ -17,7 +14,7 @@ import {ChildModel} from './models/child.model';
   styles: [],
   providers: [TreeRestService]
 })
-export class DomComponent implements OnInit {
+export class DomComponent implements OnInit, AfterViewInit {
 
   /*
    * Models
@@ -40,7 +37,7 @@ export class DomComponent implements OnInit {
   public debug = true;
   private activePaginationTreeModelId = 0;
   private recordsPerPage = 10;
-  private firstRootId = 0;
+  private firstRootId = 1;
   public configRoot = true;  // Initialise only once
 
   /*
@@ -49,6 +46,21 @@ export class DomComponent implements OnInit {
   @ViewChild('tree') treeEl: TreeComponent;
 
   constructor(private dataService: TreeRestService) {
+  }
+
+  ngOnInit() {
+    // Tree initialized
+    this.treeEl.initialized.subscribe((r) => {
+      this._makeModel(this.firstRootId);
+    });
+
+    // Node expanded
+    this.treeEl.toggleExpanded.subscribe((event) => {
+      this._makeModel(event.node.data.id);
+    });
+  }
+
+  ngAfterViewInit() {
     const timer = Observable.timer(0, this.timerTick);
     setTimeout(() => {
       timer.subscribe(t => {
@@ -57,14 +69,18 @@ export class DomComponent implements OnInit {
           this._triggers(this.models[i]);
         }
 
+        // this._testDom();
 
       });
     }, 1);
 
-    // for (let i = 0; i < this.models.length; i++) {
-    //   this._triggers(this.models[i]);
-    // }
+  }
 
+  private _testDom() {
+    const elP = document.getElementById('n-2');
+    const elC = document.getElementById('n-13');
+
+    console.log(elP, elC);
   }
 
   private _triggers(model: PaginationModel) {
@@ -73,16 +89,19 @@ export class DomComponent implements OnInit {
       return false;
     }
 
-    console.group('Model node ' + model.nodeId);
-    // console.log(model.triggerElement.el);
-    this._isDom(model.triggerElement.el, model);
-    console.groupEnd();
+    // console.group('Model node ' + model.nodeId);
+
+    const id = 'n-' + String(model.triggerElement.data.id);
+    const element = document.getElementById(id);
+    // console.log(id, element);
+    this._isDom(element, model);
+    // console.groupEnd();
 
   }
 
   private _isDom(element, model: PaginationModel) {
     const options = {offset: {top: 0, right: 0, bottom: 0, left: 0}, threshold: 0};
-    const inViewport = this._inViewport(element, options);  // Check why is el needed
+    const inViewport = this._inViewport(element, options);
     console.log(inViewport);
     // if (inViewport) {
     //   this._loadNodes(model);
@@ -124,18 +143,6 @@ export class DomComponent implements OnInit {
       && intersection.b > (options.offset.bottom + threshold.y)
       && intersection.l > (options.offset.left + threshold.x);
 
-  }
-
-  ngOnInit() {
-    // Tree initialized
-    this.treeEl.initialized.subscribe((r) => {
-      this._makeModel(this.firstRootId);
-    });
-
-    // Node expanded
-    this.treeEl.toggleExpanded.subscribe((event) => {
-      this._makeModel(event.node.data.id);
-    });
   }
 
   /*
@@ -200,10 +207,7 @@ export class DomComponent implements OnInit {
           }, 300);
         }, {compareStructural: true, fireImmediately: true}
       );
-
-
     });
-
   }
 
   private _child(items: TreeViewData[], model: PaginationModel, triggerIndex) {

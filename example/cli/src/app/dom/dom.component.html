@@ -4,11 +4,19 @@
 
 <content>
 
+  <div id="parent">
+    la la la
+    <br>
+    <div id="child">
+      ok ok ok
+    </div>
+  </div>
+
   <div class="panel panel-info">
     <div class="panel-body">
       <!--<div class="alert alert-info loading"-->
-           <!--*ngIf="(this.paginationTreeModels[this.activePaginationTreeModelId] == null) ? false : this.paginationTreeModels[this.activePaginationTreeModelId].isLoading">-->
-        <!--Loading...-->
+      <!--*ngIf="(this.paginationTreeModels[this.activePaginationTreeModelId] == null) ? false : this.paginationTreeModels[this.activePaginationTreeModelId].isLoading">-->
+      <!--Loading...-->
       <!--</div>-->
 
       <tree-root #tree
@@ -29,8 +37,6 @@
               [dropIndex]="node.index"
               [node]="node.parent">
             </tree-node-drop-slot>
-
-
 
 
             <div class="node-content-wrapper"
@@ -61,14 +67,16 @@
       <!--</li>-->
       <!--</ul>-->
 
+
+
     </div>
     <!--<div class="panel-footer"-->
-         <!--*ngIf="this.paginationTreeModels[this.activePaginationTreeModelId] != null">-->
-      <!--<div class="right">-->
-        <!--Number of loaded pages:-->
-        <!--<strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].currentPage}}</strong> / <strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].totalPages}}</strong>-->
-      <!--</div>-->
-      <!--Viewing node: <strong>Dummy name</strong>-->
+    <!--*ngIf="this.paginationTreeModels[this.activePaginationTreeModelId] != null">-->
+    <!--<div class="right">-->
+    <!--Number of loaded pages:-->
+    <!--<strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].currentPage}}</strong> / <strong>{{this.paginationTreeModels[this.activePaginationTreeModelId].totalPages}}</strong>-->
+    <!--</div>-->
+    <!--Viewing node: <strong>Dummy name</strong>-->
     <!--</div>-->
   </div>
 
