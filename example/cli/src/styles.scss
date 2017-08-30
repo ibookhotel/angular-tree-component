@@ -29,7 +29,7 @@ tree-node-wrapper {
 
 .panel-body {
   //height: 290px;
-  height: 150px;
+  height: 450px;
   position: relative;
   //padding: 0;
 }
@@ -40,16 +40,36 @@ tree-node-wrapper {
   top: 0;
   z-index: 9999999;
   border-radius: 0 4px 0 4px;
-  padding: 5px 20px;
-  box-shadow: -1px 2px 2px 0px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  padding: 5px;
 }
 
 .right {
   float: right;
 }
 
+.panel-success {
+  border-color: #dddddd;
+}
 
+.panel-success > .panel-heading {
+  color: #555;
+  background-color: #fbfbfb;
+  border-color: #dddddd;
+}
 
+.panel-heading {
+  padding: 6px 15px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.panel-footer{
+  background-color: #fbfbfb;
+  padding: 6px 15px;
+  color: #777777;
+}
 
 /*
  * ------------------------------
@@ -131,7 +151,7 @@ tree-node-expander {
  */
 
 #tree-wrapper .node-content-wrapper-active, div.node-content-wrapper.node-content-wrapper-active:hover, div.node-content-wrapper-active.node-content-wrapper-focused {
-  background: rgba(52, 73, 94, 0.6) !important;
+  background: #e5c05c !important;
   color: #FFF;
 }
 
@@ -145,7 +165,7 @@ tree-node-expander {
 }
 
 #tree-wrapper .fa
-//.orange-theme #tree-wrapper .fa
+  //.orange-theme #tree-wrapper .fa
 {
   color: #4c4c4c;
 }

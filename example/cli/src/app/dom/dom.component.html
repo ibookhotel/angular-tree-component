@@ -1,89 +1,88 @@
-<h1 class="text-success">ARIM Dom</h1>
-<p class="lead">UX driven development of Tree View Component</p>
-<hr>
+<div style="max-width: 550px">
+  <h1 class="text-success">ARIM Dom</h1>
+  <p class="lead">UX driven development of Tree View Component</p>
+  <hr>
 
-<content>
+  <content>
 
-  <div class="panel panel-info">
-    <div class="panel-body" id="panel">
-      <div class="alert alert-info loading"
-           *ngIf="(this.models[this.activeModelId] == null) ? false : this.models[this.activeModelId].isLoading">
-        Loading...
+    <div class="panel panel-success">
+
+      <div class="panel-heading clearfix">
+        <p class="text-center">{{selectedName !== '' ? selectedName : '&nbsp;' }}</p>
       </div>
 
-      <tree-root #tree
-                 [nodes]="nodes"
-                 [options]="options"
-                 [focused]="true"
-      >
+      <div class="panel-body" id="panel">
 
-        <ng-template #treeNodeFullTemplate
-                     let-node
-                     let-index="index"
-                     let-templates="templates">
+        <div class="loading" *ngIf="isLoading"><img src="assets/images/spinner.gif"></div>
 
-          <div class="tree-node" id="n-{{node.data.id}}">
+        <tree-root #tree
+                   [nodes]="nodes"
+                   [options]="options"
+                   [focused]="true"
+        >
 
-            <tree-node-drop-slot
-              *ngIf="index === 0"
-              [dropIndex]="node.index"
-              [node]="node.parent">
-            </tree-node-drop-slot>
+          <ng-template #treeNodeFullTemplate
+                       let-node
+                       let-index="index"
+                       let-templates="templates">
 
-            <div class="icon-wrapper">
-              <img *ngIf="node.data.type === 'folder'" [src]="'assets/images/icons/folder-open.png'"/>
-              <img *ngIf="node.data.type === 'root'" [src]="'assets/images/icons/folder-root.png'"/>
-              <img *ngIf="node.data.type === 'document'" [src]="'assets/images/icons/pdf.gif'"/>
+            <div class="tree-node" id="n-{{node.data.id}}">
+
+              <tree-node-drop-slot
+                *ngIf="index === 0"
+                [dropIndex]="node.index"
+                [node]="node.parent">
+              </tree-node-drop-slot>
+
+              <div class="icon-wrapper">
+                <img *ngIf="node.data.type === 'folder'" [src]="'assets/images/icons/folder-open.png'"/>
+                <img *ngIf="node.data.type === 'root'" [src]="'assets/images/icons/folder-root.png'"/>
+                <img *ngIf="node.data.type === 'document'" [src]="'assets/images/icons/pdf.gif'"/>
+              </div>
+
+
+              <div class="node-content-wrapper"
+                   [class.node-content-wrapper-active]="node.isActive"
+                   [class.node-content-wrapper-focused]="node.isFocused"
+                   (click)="node.mouseAction('click', $event)"
+                   (dblclick)="node.mouseAction('dblClick', $event)"
+                   (contextmenu)="node.mouseAction('contextMenu', $event)"
+                   (treeDrop)="node.onDrop($event)"
+                   [treeAllowDrop]="node.allowDrop"
+                   [treeDrag]="node"
+                   [treeDragEnabled]="node.allowDrag()"
+              >
+
+                <tree-node-expander [node]="node"></tree-node-expander>
+
+                <span [class.title]="true">{{ node.data.name }}</span>
+
+              </div>
+
+              <tree-node-children [node]="node" [templates]="templates"></tree-node-children>
+
+              <tree-node-drop-slot [dropIndex]="node.index + 1" [node]="node.parent"></tree-node-drop-slot>
+
             </div>
 
+          </ng-template>
 
-            <div class="node-content-wrapper"
-                 [class.node-content-wrapper-active]="node.isActive"
-                 [class.node-content-wrapper-focused]="node.isFocused"
-                 (click)="node.mouseAction('click', $event)"
-                 (dblclick)="node.mouseAction('dblClick', $event)"
-                 (contextmenu)="node.mouseAction('contextMenu', $event)"
-                 (treeDrop)="node.onDrop($event)"
-                 [treeAllowDrop]="node.allowDrop"
-                 [treeDrag]="node"
-                 [treeDragEnabled]="node.allowDrag()"
-            >
+        </tree-root>
 
-              <tree-node-expander [node]="node"></tree-node-expander>
+      </div>
 
-              <span [class.title]="true">{{ node.data.name }}</span>
-
-            </div>
-
-            <tree-node-children [node]="node" [templates]="templates"></tree-node-children>
-
-            <tree-node-drop-slot [dropIndex]="node.index + 1" [node]="node.parent"></tree-node-drop-slot>
-
-          </div>
-
-        </ng-template>
-
-      </tree-root>
+      <div class="panel-footer">
+        <p class="text-center">{{loadedRecords}} of {{numberWithCommas(totalRecords)}} {{itemString}}</p>
+      </div>
 
     </div>
 
-    <div class="panel-footer"
-         *ngIf="this.models[this.activeModelId] != null">
-      <div class="right">
-        Number of loaded pages:
-        <strong>{{this.models[this.activeModelId].currentPage}}</strong> / <strong>{{this.models[this.activeModelId].totalPages}}</strong>
-      </div>
-      Viewing node: <strong>Dummy name</strong>
-    </div>
+    <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->
 
-  </div>
+    <!--<pagination [totalItems]="paginationModels[0].totalRecords"-->
+    <!--[(ngModel)]="paginationModels[0].currentPage"-->
+    <!--(pageChanged)="pageChanged($event)"-->
+    <!--&gt;</pagination>-->
 
-  <!--<p>{{(paginationModels[0].totalRecords)}}</p>-->
-
-  <!--<pagination [totalItems]="paginationModels[0].totalRecords"-->
-  <!--[(ngModel)]="paginationModels[0].currentPage"-->
-  <!--(pageChanged)="pageChanged($event)"-->
-  <!--&gt;</pagination>-->
-
-
-</content>
+  </content>
+</div>

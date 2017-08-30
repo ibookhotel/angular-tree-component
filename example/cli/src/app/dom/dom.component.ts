@@ -34,7 +34,14 @@ export class DomComponent implements OnInit, AfterViewInit {
       mouse: {
         click: (tree, node, $event) => {
           TREE_ACTIONS.SELECT(tree, node, $event);
-          this.activeModelId = node.data.id;
+          this.selectedName = node.data.name;
+          if (node.data.hasChildren && !node.isCollapsed) {
+            this.activeModelNodeId = node.data.id;
+            if (this.debug) {
+              console.log(node);
+            }
+          }
+
         },
         dblClick: (tree, node, $event) => {
           if (!node.hasChildren) {
@@ -57,20 +64,27 @@ export class DomComponent implements OnInit, AfterViewInit {
     nodeHeight: 30,
     dropSlotHeight: 3,
     animateExpand: true,
-    animateSpeed: 130,
+    animateSpeed: 200,
     animateAcceleration: 3,
-    displayField: 'name'
+    displayField: 'name',
+    scrollOnSelect: false
   };
 
   /*
    * Initial settings
    */
-  private timerTick = 500;
-  public debug = true;
-  private activeModelId = 0;
-  private recordsPerPage = 10;
+  private timerTick = 100;
+  private recordsPerPage = 75;
   private firstRootId = 0;
-  public configRoot = true;  // Initialise only once
+  private configRoot = true;  // Initialise only once
+  private debug = false;
+
+  protected activeModelNodeId = 0;
+  protected selectedName = '';
+  protected loadedRecords = 0;
+  protected totalRecords = 0;
+  protected itemString = 'item';
+  protected isLoading = true;
 
   /*
    * Dom references
@@ -88,8 +102,13 @@ export class DomComponent implements OnInit, AfterViewInit {
 
     // Node expanded
     this.treeEl.toggleExpanded.subscribe((event) => {
-      this._makeModel(event.node.data.id);
-      // this.activeModelId = event.node.data.id;
+      if (!event.node.isCollapsed) {
+        this._makeModel(event.node.data.id);
+        this.activeModelNodeId = event.node.data.id;
+        if (this.debug) {
+          console.log(event.node);
+        }
+      }
     });
   }
 
@@ -100,6 +119,7 @@ export class DomComponent implements OnInit, AfterViewInit {
         for (let i = 0; i < this.models.length; i++) {
           this._triggers(this.models[i]);
         }
+        this._activeModel(this.activeModelNodeId);  // Update model preview
       });
     }, 1);
   }
@@ -108,8 +128,14 @@ export class DomComponent implements OnInit, AfterViewInit {
    * Calculation for loading more models
    */
   private _triggers(model: PaginationModel) {
+
+
     if (model.triggerElement == null) {
       return false;
+    }
+
+    if (this.debug) {
+      console.log('Active Model Id: ', this.activeModelNodeId);
     }
 
     /*
@@ -128,6 +154,14 @@ export class DomComponent implements OnInit, AfterViewInit {
     const triggerElement = document.getElementById(idTrigger);
     const nodeElement = document.getElementById(idNode);
     const panel = document.getElementById('panel');
+
+    if (this.debug) {
+      console.log('triggerElement: ', triggerElement);
+    }
+
+    /*
+     * Trigger element is null when node is collapsed
+     */
 
     if (nodeElement == null || triggerElement == null) {
       return false;
@@ -216,8 +250,10 @@ export class DomComponent implements OnInit, AfterViewInit {
   private _model(nodeId) {
     return {
       nodeId: nodeId,
+      nodeName: '',
       currentPage: 1,
-      totalRecords: -1,
+      totalRecords: 0,
+      loadedRecords: 0,
       totalPages: 1,
       recordsPerPage: this.recordsPerPage,
       visitedPages: [],
@@ -234,11 +270,15 @@ export class DomComponent implements OnInit, AfterViewInit {
 
     this.dataService.paginate(model.nodeId, model.currentPage, model.recordsPerPage).then((result) => {
 
+      /*
+       * Populate paging model
+       */
       model.isLoading = false;
       model.totalRecords = result.total;
+      model.loadedRecords += result.items.length;
       model.totalPages = Math.ceil(model.totalRecords / model.recordsPerPage);  // round to upper
       model.visitedPages.push(model.currentPage);
-      model.oneFifth = Math.floor(result.items.length / 5);
+      model.oneFifth = Math.floor(result.items.length / 4);
 
       reaction(() => {  // 1. Initialize or update tree
           if (this.configRoot) {
@@ -358,5 +398,29 @@ export class DomComponent implements OnInit, AfterViewInit {
       }
     });
     return nodes;
+  }
+
+  /*
+   * Find active model
+   * @return String
+   */
+  protected _activeModel(nodeId) {
+    this.models.forEach(model => {
+      if (model.nodeId === nodeId) {
+        this.loadedRecords = model.loadedRecords;
+        this.totalRecords = model.totalRecords;
+        this.itemString = model.totalRecords > 1 ? 'items' : 'item';
+        this.isLoading = model.isLoading;
+        // console.log('Found:', model, model[property]);
+        // return String(model[property]);
+      }
+    });
+  }
+
+  protected numberWithCommas(n) {
+    return n.toLocaleString(
+      undefined, // use a string like 'en-US' to override browser locale
+      {minimumFractionDigits: 0}
+    );
   }
 }
