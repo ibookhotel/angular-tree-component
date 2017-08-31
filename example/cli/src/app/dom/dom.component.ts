@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, HostListener, Inject, OnInit, ViewChild} from '@angular/core';
 import {TreeRestService} from './services/treerest.service';
 import {TreeViewData} from './models/treeview-data.model';
 import {PaginationModel} from './models/pagination.model';
@@ -7,6 +7,7 @@ import {Observable} from 'rxjs/Observable';
 import 'rxjs/Rx';
 import {reaction} from 'mobx';
 import {ChildModel} from './models/child.model';
+import {DOCUMENT} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-basictree',
@@ -74,7 +75,7 @@ export class DomComponent implements OnInit, AfterViewInit {
    */
   private timerTick = 10;
   private recordsPerPage = 150;
-  private firstRootId = 1;
+  private firstRootId = 0;
   private configRoot = true;  // Initialise only once
   private debug = false;
 
@@ -84,6 +85,7 @@ export class DomComponent implements OnInit, AfterViewInit {
   protected totalRecords = 0;
   protected itemString = 'item';  // or items
   protected isLoading = true;
+  private domIds: any = [];
 
   /*
    * Dom references
@@ -110,25 +112,99 @@ export class DomComponent implements OnInit, AfterViewInit {
         }
       }
     });
+
+
+    /*
+     * Mutation Observer solution
+     */
+    //   /* 1) Create a MutationObserver object*/
+    //  const observer = new MutationObserver(
+    //     function(mutations) {
+    //       console.log('mutations');
+    //     }),
+    //   /* 2) Create a config object */
+    //   config = {childList: true};
+    //
+    // /* 3) Glue'em all */
+    // observer.observe(msg, config);
+
+
+    /*
+     * Dom solution
+     */
+    const container = document.getElementsByTagName('tree-viewport')[0];
+    container.addEventListener('scroll', () => {
+
+      const treeNodes = document.getElementsByClassName('tree-node');
+
+      for (let i = 0; i < treeNodes.length; i++) {
+        if (this.domIds.indexOf(treeNodes[i].id) === -1) {
+          console.log(treeNodes[i].id);
+          this.domIds.push(treeNodes[i].id);
+        }
+      }
+
+      for (let i = 0; i < this.models.length; i++) {
+        if (this.domIds.indexOf(String('n-' + this.models[i].triggerElement.data.id)) !== -1) {
+          this._loadNodes(this.models[i]);
+        }
+      }
+
+      this._activeModel(this.activeModelNodeId);  // Update model preview
+    });
+
+
+    /*
+     * Timer solution
+     */
+    // const timer = Observable.timer(0, this.timerTick);
+    // timer.subscribe(t => {
+    //
+    //
+    //   const treeNodes = document.getElementsByClassName('tree-node');
+    //
+    //   for (let i = 0; i < treeNodes.length; i++) {
+    //     if (this.domIds.indexOf(treeNodes[i].id) === -1) {
+    //       console.log(treeNodes[i].id);
+    //       this.domIds.push(treeNodes[i].id);
+    //     }
+    //   }
+    //
+    //   for (let i = 0; i < this.models.length; i++) {
+    //     if (this.models[i].triggerElement.data != null) {
+    //       if (this.domIds.indexOf(String('n-' + this.models[i].triggerElement.data.id)) !== -1) {
+    //         this._loadNodes(this.models[i]);
+    //       }
+    //     }
+    //   }
+    //
+    //   this._activeModel(this.activeModelNodeId);  // Update model preview
+    //
+    // });
+
+
   }
 
   ngAfterViewInit() {
-    const timer = Observable.timer(0, this.timerTick);
-    setTimeout(() => {
-      timer.subscribe(t => {
-        for (let i = 0; i < this.models.length; i++) {
-          if (this.debug) {
-            console.group('Model ' + this.models[i].nodeId);
-          }
-          this._triggers(this.models[i]);
-          if (this.debug) {
-            console.log(this.models[i]);
-            console.groupEnd();
-          }
-        }
-        this._activeModel(this.activeModelNodeId);  // Update model preview
-      });
-    }, 1);
+    // const timer = Observable.timer(0, this.timerTick);
+    // setTimeout(() => {
+    //   timer.subscribe(t => {
+    //     for (let i = 0; i < this.models.length; i++) {
+    //       if (this.debug) {
+    //         console.group('Model ' + this.models[i].nodeId);
+    //       }
+    //       this._triggers(this.models[i]);
+    //       if (this.debug) {
+    //         console.log(this.models[i]);
+    //         console.groupEnd();
+    //       }
+    //     }
+    //     this._activeModel(this.activeModelNodeId);  // Update model preview
+    //   });
+    // }, 1);
+
+    // this.treeEl.treeModel.viewportNodes
+
   }
 
   /*

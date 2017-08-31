@@ -2,7 +2,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
-import { TreeModule } from 'angular-tree-component';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -24,6 +23,7 @@ import { DragComponent } from './drag/drag.component';
 import { useStrict } from 'mobx';
 import { EmptyComponent } from './empty/empty.component';
 import {DomComponent} from './dom/dom.component';
+import {TreeModule} from 'angular-tree-component';
 useStrict(true);
 
 

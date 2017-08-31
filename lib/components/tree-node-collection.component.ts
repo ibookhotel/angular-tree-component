@@ -42,6 +42,8 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
         this.setFakeNodes(nodes);
     }
 
+    public ids: any = [];
+
     @Input() treeModel: TreeModel;
 
     @observable _nodes;
@@ -121,6 +123,15 @@ export class TreeNodeCollectionComponent implements OnInit, OnDestroy {
                     // this.fakeNodes = fakeNodes;
 
                     const vViewportNodes = nodeIndexes.map((i) => this.nodes[i]);
+
+                    // const fake = nodeIndexes.map((i) => {
+                    //     if (this.ids.indexOf(this.nodes[i].id) === -1) {
+                    //         console.log(this.nodes[i].id);
+                    //         this.ids.push(this.nodes[i].id);
+                    //     }
+                    //     return this.nodes[i];
+                    // });
+
                     // const vFakeViewportNodes = nodeIndexes.map((i) => new TreeNode(fakeNodes[i], this.treeModel.getFirstRoot(), this.treeModel, i));
                     // console.log('vViewportNodes: ', vViewportNodes);
                     // console.log('vViewportNodes: ', vFakeViewportNodes);
